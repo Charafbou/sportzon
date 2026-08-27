@@ -428,10 +428,18 @@
     const fallbackText =
       "⚽ تغطية مستمرة لأحدث الأخبار والنتائج والمباريات الرياضية عبر SPORT ZONE";
 
-    const rssEndpoints = [
-      "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.kooora.com/?_rss=1"),
-      "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://news.google.com/rss/search?q=%D9%83%D8%B1%D8%A9+%D8%A7%D9%84%D9%82%D8%AF%D9%85+%D8%A3%D9%88%D8%B1%D9%88%D8%A8%D8%A7+%D9%83%D9%88%D9%88%D9%88%D8%B1%D8%A9&hl=ar&gl=EG&ceid=EG:ar")
-    ];
+  const rssEndpoints = [
+    // beIN Sports (تغطية عالمية وعربية)
+    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.beinsports.com/ar-mena/rss"),
+    // المغرب (Le360 Sport / هسبريس رياضة)
+    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://ar.le360.ma/rss/sports.xml"),
+    // السعودية (صحيفة الرياضية السعودية)
+    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://arriyadiyah.com/rss"),
+    // الجزائر (أخبار الرياضة الجزائرية - الشروق رياضة)
+    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.echoroukonline.com/sport/feed"),
+    // تونس (أخبار الرياضة التونسية - موزاييك إف إم رياضة)
+    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.mosaiquefm.net/ar/rss/sport")
+  ];
 
     let items = [];
 
