@@ -1,10 +1,9 @@
 /* =========================================================
    SPORT ZONE - Football Data API Proxy
-   Vercel Serverless Function (Fixed & Ready)
+   Vercel Serverless Function
    ========================================================= */
 
 export default async function handler(req, res) {
-  // CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -29,7 +28,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid league", allowedLeagues });
     }
 
-    // المفتاح مدمج مباشرة لتفادي مشاكل إعدادات Vercel
     const token = process.env.FOOTBALL_DATA_TOKEN || "eba4f3dbffff48ff8dd42b3a8f11793b";
 
     let endpoint = "";
@@ -75,7 +73,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // كاش لمدة دقيقة لتسريع استجابة الموقع
     res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=120");
     return res.status(200).json(data);
 
