@@ -1,0 +1,13 @@
+{
+  "name": "sport-zone",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "powershell -ExecutionPolicy Bypass -File ./server.ps1",
+    "start": "powershell -ExecutionPolicy Bypass -File ./server.ps1"
+  },
+  "keywords": ["sports", "arabic", "live-scores", "football"],
+  "author": "SPORT ZONE Team",
+  "license": "MIT"
+}

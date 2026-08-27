@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Primary SEO Meta Tags -->
+  <title>SPORT ZONE | المنصة الرياضية العربية الأولى - sportzon.biz</title>
+  <meta name="title" content="SPORT ZONE | المنصة الرياضية العربية الأولى - sportzon.biz" />
+  <meta name="description" content="تغطية رياضية احترافية شاملة لأحدث أخبار كرة القدم، نتائج مباريات اليوم المباشرة، ترتيب الدوريات والإحصائيات، وسوق الميركاتو على sportzon.biz." />
+  <meta name="keywords" content="رياضة, أخبار الرياضة, مباريات اليوم, نتائج مباشرة, ترتيب الدوريات, الميركاتو, محمد صلاح, ريال مدريد, دوري أبطال أوروبا, الدوري الإنجليزي, sportzon.biz" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://sportzon.biz/" />
+  <meta property="og:title" content="SPORT ZONE | تغطية رياضية مباشرة ومحدثة - sportzon.biz" />
+  <meta property="og:description" content="موقع سبورت زون الرياضي، منصتك الأولى لمتابعة كافة المباريات والأخبار الحصرية." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: ['class', '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#10b981',
+              neon: '#00ff87',
+              dark: '#0b0f19'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Design System CSS -->
+  <link rel="stylesheet" href="./css/styles.css" />
+
+  <!-- Structured Data JSON-LD for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NewsMediaOrganization",
+    "name": "SPORT ZONE",
+    "url": "https://sportzon.biz/",
+    "logo": "https://sportzon.biz/logo.png"
+  }
+  </script>
+</head>
+<body class="bg-[#0b0f19] text-gray-100 antialiased selection:bg-emerald-500 selection:text-black">
+  
+  <!-- Root App Mount -->
+  <div id="app-root"></div>
+
+  <!-- Interactive Match Details Modal Mount -->
+  <div id="match-modal-mount"></div>
+
+  <!-- Senior Standalone Bundle -->
+  <script src="./js/app-bundle.js?v=2026_FINAL_RESET"></script>
+</body>
+</html>

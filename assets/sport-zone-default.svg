@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Sport Zone</title>
+  <desc id="desc">Sport Zone default sports news image</desc>
+  <defs>
+    <linearGradient id="background" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#102b30"/>
+      <stop offset="1" stop-color="#09111f"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" x2="1">
+      <stop stop-color="#21d58b"/>
+      <stop offset="1" stop-color="#4ed9ed"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#background)"/>
+  <circle cx="600" cy="315" r="145" fill="none" stroke="#ffffff" stroke-opacity=".12" stroke-width="8"/>
+  <path d="M600 170l92 66-35 108H543l-35-108zM450 260l93-24 57 79-35 105-103-8-37-101zm300 0l-93-24-57 79 35 105 103-8 37-101zM495 419l70-34h70l70 34-24 105H519z" fill="url(#accent)" opacity=".9"/>
+  <text x="600" y="530" text-anchor="middle" fill="#f7fafc" font-family="Arial, sans-serif" font-size="48" font-weight="800">SPORT ZONE</text>
+</svg>

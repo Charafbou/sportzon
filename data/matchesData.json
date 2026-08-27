@@ -1,0 +1,131 @@
+{
+  "botola": {
+    "leagueName": "البطولة الوطنية المغربية الاحترافية (Inwi)",
+    "flag": "🇲🇦",
+    "matches": [
+      {
+        "id": "bot-1",
+        "homeTeam": { "name": "الرجاء الرياضي", "logo": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Raja_Casablanca_logo.svg", "score": 2 },
+        "awayTeam": { "name": "الوداد الرياضي", "logo": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Wydad_AC_logo.svg", "score": 1 },
+        "status": "FT انتهت 🏁",
+        "isLive": false,
+        "time": "اليوم 20:00",
+        "venue": "المركب الرياضي محمد الخامس - الدار البيضاء"
+      },
+      {
+        "id": "bot-2",
+        "homeTeam": { "name": "الجيش الملكي", "logo": "https://upload.wikimedia.org/wikipedia/commons/7/7b/AS_FAR_logo.png", "score": 1 },
+        "awayTeam": { "name": "نهضة بركان", "logo": "https://upload.wikimedia.org/wikipedia/en/4/4b/RS_Berkane_logo.png", "score": 0 },
+        "status": "مباشر ⚡",
+        "isLive": true,
+        "time": "الشوط الثاني 75'",
+        "venue": "المركب الرياضي الأمير مولاي عبد الله - الرباط"
+      },
+      {
+        "id": "bot-3",
+        "homeTeam": { "name": "الفتح الرياضي", "logo": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Raja_Casablanca_logo.svg", "score": 0 },
+        "awayTeam": { "name": "المغرب الفاسي", "logo": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Wydad_AC_logo.svg", "score": 0 },
+        "status": "قادمة ⏰",
+        "isLive": false,
+        "time": "غداً 18:00",
+        "venue": "ملعب مولاي الحسن - الرباط"
+      }
+    ]
+  },
+  "spl": {
+    "leagueName": "الدوري السعودي للمحترفين (روشن)",
+    "flag": "🇸🇦",
+    "matches": [
+      {
+        "id": "spl-1",
+        "homeTeam": { "name": "الهلال السعودي", "logo": "https://upload.wikimedia.org/wikipedia/en/a/a8/Al_Hilal_SFC_logo.svg", "score": 3 },
+        "awayTeam": { "name": "النصر السعودي", "logo": "https://upload.wikimedia.org/wikipedia/en/c/c5/Al_Nassr_FC.svg", "score": 2 },
+        "status": "FT انتهت 🏁",
+        "isLive": false,
+        "time": "اليوم 21:00",
+        "venue": "ملعب المملكة أرينا - الرياض"
+      },
+      {
+        "id": "spl-2",
+        "homeTeam": { "name": "الاتحاد السعودي", "logo": "https://upload.wikimedia.org/wikipedia/en/a/a2/Al-Ittihad_Club_Logo.svg", "score": 2 },
+        "awayTeam": { "name": "الأهلي السعودي", "logo": "https://upload.wikimedia.org/wikipedia/en/f/f3/Al-Ahli_Saudi_FC_logo.svg", "score": 1 },
+        "status": "مباشر ⚡",
+        "isLive": true,
+        "time": "الشوط الثاني 62'",
+        "venue": "مدينة الملك عبدالله الرياضية (الجوهرة المشعة)"
+      },
+      {
+        "id": "spl-3",
+        "homeTeam": { "name": "الشباب السعودي", "logo": "https://upload.wikimedia.org/wikipedia/en/a/a8/Al_Hilal_SFC_logo.svg", "score": 0 },
+        "awayTeam": { "name": "التعاون السعودي", "logo": "https://upload.wikimedia.org/wikipedia/en/c/c5/Al_Nassr_FC.svg", "score": 0 },
+        "status": "قادمة ⏰",
+        "isLive": false,
+        "time": "غداً 19:30",
+        "venue": "ملعب نادي الشباب - الرياض"
+      }
+    ]
+  },
+  "egypt": {
+    "leagueName": "الدوري المصري الممتاز (نايل)",
+    "flag": "🇪🇬",
+    "matches": [
+      {
+        "id": "egy-1",
+        "homeTeam": { "name": "الأهلي المصري", "logo": "https://upload.wikimedia.org/wikipedia/en/8/8c/Al_Ahly_SC_logo.svg", "score": 2 },
+        "awayTeam": { "name": "الزمالك المصري", "logo": "https://upload.wikimedia.org/wikipedia/en/0/04/ZamalekSC.svg", "score": 1 },
+        "status": "FT انتهت 🏁",
+        "isLive": false,
+        "time": "اليوم 19:00",
+        "venue": "ستاد القاهرة الدولي"
+      },
+      {
+        "id": "egy-2",
+        "homeTeam": { "name": "بيراميدز", "logo": "https://upload.wikimedia.org/wikipedia/en/b/b6/Pyramids_FC_logo.svg", "score": 1 },
+        "awayTeam": { "name": "المصري البورسعيدي", "logo": "https://upload.wikimedia.org/wikipedia/en/8/8c/Al_Ahly_SC_logo.svg", "score": 0 },
+        "status": "مباشر ⚡",
+        "isLive": true,
+        "time": "الشوط الأول 40'",
+        "venue": "ستاد الدفاع الجوي - القاهرة"
+      }
+    ]
+  },
+  "caf": {
+    "leagueName": "دوري أبطال إفريقيا (CAF Champions League)",
+    "flag": "🌍",
+    "matches": [
+      {
+        "id": "caf-1",
+        "homeTeam": { "name": "الأهلي المصري", "logo": "https://upload.wikimedia.org/wikipedia/en/8/8c/Al_Ahly_SC_logo.svg", "score": 2 },
+        "awayTeam": { "name": "الرجاء المغربي", "logo": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Raja_Casablanca_logo.svg", "score": 1 },
+        "status": "FT انتهت 🏁",
+        "isLive": false,
+        "time": "أمس",
+        "venue": "ستاد القاهرة الدولي"
+      },
+      {
+        "id": "caf-2",
+        "homeTeam": { "name": "الترجي التونسي", "logo": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Esperance_Sportive_de_Tunis.svg", "score": 1 },
+        "awayTeam": { "name": "صن داونز", "logo": "https://upload.wikimedia.org/wikipedia/en/b/b3/Mamelodi_Sundowns_FC.svg", "score": 0 },
+        "status": "قادمة ⏰",
+        "isLive": false,
+        "time": "السبت القادم 20:00",
+        "venue": "الملعب الأولمبي حمادي العقربي برادس"
+      }
+    ]
+  },
+  "afc": {
+    "leagueName": "دوري أبطال آسيا للنخبة (AFC)",
+    "flag": "🌏",
+    "matches": [
+      {
+        "id": "afc-1",
+        "homeTeam": { "name": "الهلال السعودي", "logo": "https://upload.wikimedia.org/wikipedia/en/a/a8/Al_Hilal_SFC_logo.svg", "score": 3 },
+        "awayTeam": { "name": "العين الإماراتي", "logo": "https://upload.wikimedia.org/wikipedia/en/a/a2/Al-Ittihad_Club_Logo.svg", "score": 1 },
+        "status": "FT انتهت 🏁",
+        "isLive": false,
+        "time": "أمس",
+        "venue": "ملعب المملكة أرينا - الرياض"
+      }
+    ]
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "ticker": [
+    "🔥 عاجل: محمد صلاح يسجل هدف الفوز القاتل في الدقيقة 94 أمام مانشستر سيتي!",
+    "⚽ ريال مدريد يتأهل رسمياً إلى نصف نهائي دوري أبطال أوروبا بعد ريمونتادا مذهلة ضد بايرن ميونخ.",
+    "🏆 رسمياً: برشلونة يعلن تجديد عقد الجوهرة لامين يامال حتى عام 2030 بشروط جزائية قياسية.",
+    "🚨 كيليان مبابي يستعد لقيادة باريس سان جيرمان في المواجهة المرتقبة بالدوري الفرنسي.",
+    "🌟 منتخب المغرب يحقق قفزة تاريخية في تصنيف الفيفا الشهري ويتصدر الفرق العربية والجميع محتفل.",
+    "💥 النادي الأهلي المصري يعلن رسمياً جاهزية كافة نجومه لمواجهة نصف نهائي دوري أبطال إفريقيا."
+  ],
+  "news": [
+    {
+      "id": "news-1",
+      "title": "ملحمة الاتحاد: ليفربول ينتزع صدارة الدوري الإنجليزي بهدف صلاح القاتل في شباك السيتي",
+      "summary": "في مباراة حبست الأنفاس حتى الثواني الأخيرة، استطاع الفرعون المصري محمد صلاح قيادة الريدز لفوز تاريخي على مانشستر سيتي في ملعب الاتحاد بنتيجة 2-1.",
+      "content": "شهدت قمة الجولة في الدوري الإنجليزي الممتاز مواجهة نارية جمعت بين مانشستر سيتي وليفربول على أرضية ملعب الاتحاد.\n\nافتتح السيتي التسجيل مبكراً عن طريق إرلينج هالاند من ضربة رأسية متقنة في الدقيقة 18، قبل أن يعادل سوبوسلاي الكفة للريدز بتسديدة صاروخية من خارج منطقة الجزاء مع بداية الشوط الثاني.\n\nوفي الدقيقة 90+4، استغل محمد صلاح تمريرة سحرية ليطلق رصاصة الرحمة وتسديدة سكنت أعلى الزاوية اليسرى لحارس المرمى مانحاً ليفربول ثلاث نقاط ثمينة انفرد بها بصدارة جدول ترتيب البريميرليج.",
+      "category": "الدوري الإنجليزي",
+      "categorySlug": "premier",
+      "image": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80",
+      "author": "كريم أحمد - مراسل لندن",
+      "date": "منذ 25 دقيقة",
+      "readTime": "4 دقائق",
+      "views": 18450,
+      "isHero": true,
+      "isTrending": true,
+      "isMostRead": true,
+      "comments": [
+        { "id": "c1", "user": "أحمد المصري", "text": "أفضل لاعب في العالم بدون منازع! فخر العرب دائماً 👑", "date": "منذ 10 دقائق" },
+        { "id": "c2", "user": "علي السيتي", "text": "مباراة قوية جداً وللأسف الدفاع قصر في الدقائق الأخيرة.", "date": "منذ 15 دقيقة" }
+      ]
+    },
+    {
+      "id": "news-2",
+      "title": "ليلة الساحر يامال: برشلونة يدك حصون أتلتيكو مدريد بثلاثية نظيفة في الكامب نو",
+      "summary": "قدم الشاب الواعد لامين يامال مباراة استعراضية خيالية سجل فيها هدفاً وصنع هدفين ليقود البلاوجرانا لفوز عريض في الدوري الإسباني.",
+      "content": "استعاد نادي برشلونة بريقه في الليغا عقب انتصار مستحق على أتلتيكو مدريد بـ 3 أهداف مقابل لا شيء...",
+      "category": "الدوري الإسباني",
+      "categorySlug": "laliga",
+      "image": "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=800&q=80",
+      "author": "سامي البرشالوني",
+      "date": "منذ ساعة واحدة",
+      "readTime": "3 دقائق",
+      "views": 14200,
+      "isHero": false,
+      "isTrending": true,
+      "isMostRead": true,
+      "comments": []
+    },
+    {
+      "id": "news-3",
+      "title": "قرعة دوري أبطال أوروبا: مواجهات نارية مرتقبة في ربع النهائي ومواجهة مدوية بين الريال والبيเอสจี",
+      "summary": "سحبت اليوم في مقر الاتحاد الأوروبي لكرة القدم قرعة الدور ربع النهائي من بطولة دوري أبطال أوروبا، والتي أسفرت عن مباريات قمة من العيار الثقيل.",
+      "content": "أسفرت قرعة دوري أبطال أوروبا لعام 2026 عن مواجهة متكررة ولكن بأبعاد جديدة تجمع بين ريال مدريد وباريس سان جيرمان...",
+      "category": "دوري أبطال أوروبا",
+      "categorySlug": "champions",
+      "image": "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80",
+      "author": "فريق التحرير",
+      "date": "منذ 3 ساعات",
+      "readTime": "5 دقائق",
+      "views": 22100,
+      "isHero": false,
+      "isTrending": true,
+      "isMostRead": true,
+      "comments": []
+    },
+    {
+      "id": "news-4",
+      "title": "إنتر ميلان يواصل التحليق في صدارة الكالتشيو بفوز صعب على يوفنتوس في ديربي إيطاليا",
+      "summary": "حسم النيراتزوري قمة الجولة في الدوري الإيطالي بهدف دون رد في اللقاء الذي أقيم على ملعب سان سيرو وسط حضور جماهيري غفير.",
+      "content": "واصل فريق إنتر ميلان سلسلة انتصاراته المتتالية في الدوري الإيطالي...",
+      "category": "الدوري الإيطالي",
+      "categorySlug": "seriea",
+      "image": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=800&q=80",
+      "author": "ماركو الإيطالي",
+      "date": "منذ 4 ساعات",
+      "readTime": "3 دقائق",
+      "views": 9800,
+      "isHero": false,
+      "isTrending": false,
+      "isMostRead": false,
+      "comments": []
+    },
+    {
+      "id": "news-5",
+      "title": "كتيبة أسود الأطلس: وليد الركراكي يعلن قائمة منتخب المغرب للوديات الدولية القادمة",
+      "summary": "شهدت القائمة استدعاء وجوه جديدة متألقة في الدوريات الأوروبية إلى جانب الركائز الأساسية التي حققت الإنجاز المونديالي.",
+      "content": "كشف المدرب الوطني لمنتخب المغرب وليد الركراكي عن اللائحة الرسمية...",
+      "category": "أخبار المنتخبات",
+      "categorySlug": "national",
+      "image": "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=800&q=80",
+      "author": "حسين المغربي",
+      "date": "منذ 6 ساعات",
+      "readTime": "4 دقائق",
+      "views": 19300,
+      "isHero": false,
+      "isTrending": true,
+      "isMostRead": true,
+      "comments": []
+    }
+  ],
+  "matches": [
+    {
+      "id": "m-1",
+      "league": "دوري أبطال أوروبا",
+      "leagueSlug": "champions",
+      "homeTeam": { "id": "t-real", "name": "ريال مدريد", "logo": "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg", "score": 2 },
+      "awayTeam": { "id": "t-bayern", "name": "بايرن ميونخ", "logo": "https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg", "score": 1 },
+      "time": "78'",
+      "status": "LIVE",
+      "date": "اليوم",
+      "stadium": "ملعب سانتياغو برنابيو",
+      "referee": "شيمون مارتشينياك",
+      "events": [
+        { "minute": "14'", "player": "هاري كين", "team": "away", "type": "goal" },
+        { "minute": "42'", "player": "فينيسيوس جونيور", "team": "home", "type": "goal" },
+        { "minute": "68'", "player": "جود بيلينجهام", "team": "home", "type": "goal" }
+      ],
+      "stats": {
+        "possession": { "home": 58, "away": 42 },
+        "shots": { "home": 16, "away": 9 }
+      }
+    },
+    {
+      "id": "m-2",
+      "league": "الدوري الإنجليزي",
+      "leagueSlug": "premier",
+      "homeTeam": { "id": "t-liv", "name": "ليفربول", "logo": "https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg", "score": 2 },
+      "awayTeam": { "id": "t-mci", "name": "مانشستر سيتي", "logo": "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg", "score": 1 },
+      "time": "انتهت",
+      "status": "FINISHED",
+      "date": "اليوم",
+      "stadium": "ملعب أنفيلد",
+      "referee": "أنتوني تايلور",
+      "events": [
+        { "minute": "18'", "player": "إرلينج هالاند", "team": "away", "type": "goal" },
+        { "minute": "54'", "player": "سوبوسلاي", "team": "home", "type": "goal" },
+        { "minute": "90+4'", "player": "محمد صلاح", "team": "home", "type": "goal" }
+      ],
+      "stats": {
+        "possession": { "home": 51, "away": 49 },
+        "shots": { "home": 14, "away": 11 }
+      }
+    },
+    {
+      "id": "m-3",
+      "league": "الدوري الإسباني",
+      "leagueSlug": "laliga",
+      "homeTeam": { "id": "t-barca", "name": "برشلونة", "logo": "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona.svg", "score": 0 },
+      "awayTeam": { "id": "t-atletico", "name": "أتلتيكو مدريد", "logo": "https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg", "score": 0 },
+      "time": "22:00",
+      "status": "SCHEDULED",
+      "date": "اليوم",
+      "stadium": "سبوتيفاي كامب نو",
+      "referee": "خيل مانزانو",
+      "events": []
+    }
+  ]
+}
