@@ -2,6 +2,7 @@
    SPORT ZONE - Dedicated Football & Sports RSS Service
    Using Exact Football Search Endpoint + Smart Sports Filter
    Preserving Manual Admin Posts at Top & Standardized Image Keys
+   Dynamic 24-Hour Live News Ticker (Up to 50 Live Items)
    ========================================== */
 
 import {
@@ -52,86 +53,40 @@ export class SportsApiService {
       }
     }
 
-    // جلب كافة المقالات اليدوية وضمان توحيد مفاتيح الصور والروابط
-    const manualPosts = this._extractManualPosts(state.news);
-    if (manualPosts.length > 0) {
-      const manualIds = new Set(manualPosts.map(m => m.id));
-      const filteredNews = (state.news || []).filter(n => !manualIds.has(n.id) && !this._isManual(n));
-      state.news = [...manualPosts, ...filteredNews];
-    }
-
     return state;
   }
 
-  // تمييز المقال اليدوي سواء عبر isManual أو المعرف id أو عدم انتمائه للـ RSS
-  _isManual(item) {
-    if (!item) return false;
-    if (item.isManual === true) return true;
-    if (item.id && typeof item.id === 'string' && item.id.startsWith('manual')) return true;
-    if (item.id && typeof item.id === 'string' && !item.id.startsWith('sports-rss-') && !item.id.toString().startsWith('mock-')) return true;
-    return false;
-  }
-
-  // توحيد بنية المقالات اليدوية لضمان ظهور الصور وعمل الروابط
-  _normalizeArticle(post, index = 0) {
-    const rawImg = post.image || post.imageUrl || post.img || post.thumbnail || post.coverImage;
-    const finalImg = (rawImg && typeof rawImg === 'string' && rawImg.trim() !== '') ? rawImg : DEFAULT_FALLBACK_IMAGE;
-    const finalLink = post.sourceUrl || post.link || post.url || `#`;
-    const id = post.id || `manual-${Date.now()}-${index}`;
-
-    return {
-      ...post,
-      id: id,
-      title: post.title || "خبر رياضي",
-      summary: post.summary || (post.content ? (post.content.length > 150 ? post.content.slice(0, 150) + '...' : post.content) : post.title),
-      content: post.content || post.summary || post.title,
-      category: post.category || "كرة القدم والرياضة",
-      categorySlug: post.categorySlug || "premier",
-      image: finalImg,
-      imageUrl: finalImg,
-      img: finalImg,
-      sourceUrl: finalLink,
-      link: finalLink,
-      url: finalLink,
-      author: post.author || "فريق التحرير - SPORT ZONE",
-      date: post.date || "اليوم",
-      readTime: post.readTime || "3 دقائق",
-      views: post.views || Math.floor(Math.random() * 500) + 120,
-      isManual: true,
-      comments: post.comments || []
-    };
-  }
-
-  _extractManualPosts(newsArray = []) {
+  _getManualPosts() {
     let posts = [];
 
-    // 1. فحص المفتاح المخصص
     try {
-      const mSaved = localStorage.getItem(MANUAL_POSTS_KEY);
-      if (mSaved) {
-        const parsed = JSON.parse(mSaved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          posts = [...parsed];
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.news)) {
+          posts = parsed.news.filter(n => n.isManual || (n.id && n.id.toString().startsWith('manual')));
         }
       }
     } catch (e) {}
 
-    // 2. فحص مصفوفة الأخبار المحفوظة
-    if (Array.isArray(newsArray)) {
-      const fromNews = newsArray.filter(n => this._isManual(n));
-      const existingIds = new Set(posts.map(p => p.id));
-      fromNews.forEach(p => {
-        if (!existingIds.has(p.id)) {
-          posts.push(p);
-        }
-      });
+    if (posts.length === 0 && this.data && Array.isArray(this.data.news)) {
+      posts = this.data.news.filter(n => n.isManual || (n.id && n.id.toString().startsWith('manual')));
     }
 
-    return posts.map((p, idx) => this._normalizeArticle(p, idx));
-  }
-
-  _getManualPosts() {
-    return this._extractManualPosts(this.data && this.data.news ? this.data.news : []);
+    return posts.map(post => {
+      const img = post.image || post.imageUrl || post.img || post.thumbnail || DEFAULT_FALLBACK_IMAGE;
+      const link = post.sourceUrl || post.link || post.url || '#';
+      return {
+        ...post,
+        image: img,
+        imageUrl: img,
+        img: img,
+        sourceUrl: link,
+        link: link,
+        url: link,
+        isManual: true
+      };
+    });
   }
 
   _saveState() {
@@ -150,7 +105,7 @@ export class SportsApiService {
 
     if (this.liveNewsCache && (Date.now() - this.lastFetchTime < 120000)) {
       const manualIds = new Set(manualPosts.map(m => m.id));
-      const filteredCache = this.liveNewsCache.filter(n => !manualIds.has(n.id) && !this._isManual(n));
+      const filteredCache = this.liveNewsCache.filter(n => !manualIds.has(n.id));
       return [...manualPosts, ...filteredCache];
     }
 
@@ -199,6 +154,7 @@ export class SportsApiService {
             imageUrl: rawUrl,
             img: rawUrl,
             author: sourceName,
+            pubDate: item.pubDate,
             date: this._formatArabicDate(item.pubDate),
             readTime: "3 دقائق",
             views: Math.floor(Math.random() * 14000) + 4000,
@@ -216,7 +172,7 @@ export class SportsApiService {
         this.lastFetchTime = Date.now();
 
         const manualIds = new Set(manualPosts.map(m => m.id));
-        const filteredCurated = curatedNews.filter(n => !manualIds.has(n.id) && !this._isManual(n));
+        const filteredCurated = curatedNews.filter(n => !manualIds.has(n.id));
         
         const hasManualHero = manualPosts.some(m => m.isHero);
         if (hasManualHero) {
@@ -235,27 +191,41 @@ export class SportsApiService {
 
     const currentNews = this.data.news && this.data.news.length > 0 ? this.data.news : MOCK_NEWS;
     const manualIds = new Set(manualPosts.map(m => m.id));
-    const filteredCurrent = currentNews.filter(n => !manualIds.has(n.id) && !this._isManual(n));
+    const filteredCurrent = currentNews.filter(n => !manualIds.has(n.id));
     return [...manualPosts, ...filteredCurrent];
   }
 
-  // إضافة مقال جديد وحفظه دائماً في مكانين للأمان
-  addManualPost(post) {
-    const formattedPost = this._normalizeArticle(post);
-    const manualPosts = this._getManualPosts().filter(p => p.id !== formattedPost.id);
-    const updated = [formattedPost, ...manualPosts];
-
+  // شريط الأخبار الحية بسقف يصل إلى 50 خبراً لآخر 24 ساعة
+  async getTickerNews() {
     try {
-      localStorage.setItem(MANUAL_POSTS_KEY, JSON.stringify(updated));
-    } catch (e) {}
+      const liveNews = await this.fetchLiveSportsNews();
+      if (Array.isArray(liveNews) && liveNews.length > 0) {
+        const now = Date.now();
+        const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 
-    // حفظ في الحالة العامة أيضاً
-    const nonManual = (this.data.news || []).filter(n => !this._isManual(n));
-    this.data.news = [formattedPost, ...manualPosts, ...nonManual];
-    this._saveState();
+        const recent24hNews = liveNews.filter(item => {
+          if (item.isManual) return true;
+          if (item.pubDate) {
+            const time = new Date(item.pubDate).getTime();
+            if (!isNaN(time)) {
+              return (now - time) <= TWENTY_FOUR_HOURS_MS;
+            }
+          }
+          return true;
+        });
 
-    this.liveNewsCache = null;
-    return formattedPost;
+        // سقف 50 خبراً
+        const titles = (recent24hNews.length > 0 ? recent24hNews : liveNews)
+          .slice(0, 50)
+          .map(item => item.title.replace(/\s*-\s*[^-]+$/, '').trim());
+
+        return titles;
+      }
+    } catch (err) {
+      console.warn("Error fetching ticker news:", err);
+    }
+
+    return this.data.ticker && this.data.ticker.length > 0 ? this.data.ticker : MOCK_TICKER_NEWS;
   }
 
   _formatArabicDate(dateString) {
@@ -282,10 +252,6 @@ export class SportsApiService {
     } catch (e) {
       return "اليوم";
     }
-  }
-
-  async getTickerNews() {
-    return this.data.ticker;
   }
 
   async getHeroArticle() {
