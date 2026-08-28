@@ -1,8 +1,7 @@
 /* ==========================================
-   SPORT ZONE - Complete Senior Sports UI/UX Architecture
+   SPORT ZONE - Complete Senior UI/UX Architecture
    Domain: sportzon.biz • Official Email: contact@sportzon.biz
-   Includes: Fixed Aspect Ratios, Seamless High-Contrast Ticker, 
-   Responsive Hero Cards, Match Filters & Glassmorphism
+   Includes: Image Optimization, Premium News Ticker, & Match Hub
    ========================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
@@ -26,7 +25,6 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  direction: rtl; /* اتجاه الموقع من اليمين لليسار */
 }
 
 /* Glassmorphism Panels */
@@ -47,16 +45,16 @@ body {
 }
 
 /* ==========================================
-   1. SEAMLESS NEWS TICKER (MODERN SPORTY COLORS)
+   1. PREMIUM SEAMLESS NEWS TICKER (معدل بالكامل)
    ========================================== */
 
-/* الحاوية الرئيسية لشريط الأخبار */
+/* الحاوية الرئيسية للشريط */
 .ticker-container {
   display: flex;
   align-items: center;
   background: linear-gradient(90deg, #090e17 0%, #111a2e 50%, #090e17 100%);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 2.5px solid var(--brand-neon); /* خط نيون أخضر رياضي أسفل الشريط */
+  border-bottom: 2.5px solid var(--brand-neon); /* شريط نيون أخضر مضيء */
   height: 46px;
   overflow: hidden;
   position: relative;
@@ -64,13 +62,13 @@ body {
   direction: rtl;
 }
 
-/* شارة "عاجل" الحمراء المميزة */
+/* شارة عاجل */
 .ticker-badge {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: #ffffff;
   font-weight: 900;
   font-size: 0.88rem;
-  padding: 0 1.3rem;
+  padding: 0 1.25rem;
   height: 100%;
   display: flex;
   align-items: center;
@@ -80,7 +78,7 @@ body {
   box-shadow: -4px 0 15px rgba(239, 68, 68, 0.4);
 }
 
-/* النقطة النابضة الحية داخل شارة عاجل */
+/* النقطة المضيئة النابضة */
 .ticker-badge::before {
   content: '';
   display: inline-block;
@@ -97,34 +95,35 @@ body {
   50% { opacity: 0.3; transform: scale(0.8); }
 }
 
-/* حاوية تدفق الأخبار */
+/* حاوية حركة الأخبار */
 .ticker-wrap {
   flex: 1;
   overflow: hidden;
   white-space: nowrap;
   display: flex;
+  align-items: center;
 }
 
-/* محتوى الأخبار بحركة مستمرة ومريحة */
+/* حركة تدفق الأخبار - سرعة هادئة تمنع الفراغ */
 .ticker-content {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
-  animation: ticker-smooth 45s linear infinite; /* سرعة هادئة ومناسبة للقراءة */
+  animation: ticker-smooth 48s linear infinite; /* سرعة مريحة للقراءة */
   will-change: transform;
 }
 
-/* إيقاف مؤقت لحركة الشريط عند مرور الفأرة للقراءة */
+/* إيقاف الحركة عند وضع الفأرة للقراءة */
 .ticker-wrap:hover .ticker-content {
   animation-play-state: paused;
   cursor: pointer;
 }
 
-/* عناصر الأخبار والنصوص */
+/* نص الخبر - أبيض ناصع وواضح جداً */
 .ticker-item,
 .ticker-content a,
 .ticker-content span {
-  color: #ffffff !important;   /* لون أبيض ناصع عالي الوضوح */
+  color: #ffffff !important;
   font-size: 0.92rem;
   font-weight: 700;
   text-decoration: none;
@@ -134,32 +133,29 @@ body {
   transition: color 0.2s ease;
 }
 
-/* تلوين العنوان بالأخضر النيون عند مرور الماوس */
 .ticker-item:hover,
 .ticker-content a:hover {
   color: var(--brand-neon) !important;
 }
 
-/* فاصل كرة القدم المضيء بين الأخبار */
+/* كرة قدم فاصلة بين الأخبار */
 .ticker-item::after {
   content: "⚽";
   margin-right: 1.5rem;
   font-size: 0.8rem;
-  filter: drop-shadow(0 0 2px rgba(255,255,255,0.6));
+  filter: drop-shadow(0 0 2px rgba(255,255,255,0.5));
 }
 
-/* الحركة الدائرية الانسيابية */
 @keyframes ticker-smooth {
   0% { transform: translate3d(0, 0, 0); }
   100% { transform: translate3d(100%, 0, 0); }
 }
 
-
 /* ==========================================
-   2. ARTICLE & HERO IMAGE OPTIMIZATIONS (FIXED)
+   2. ARTICLE & HERO IMAGE STYLES (معدل لضبط مقاسات الصور)
    ========================================== */
 
-/* حاوية صورة المقال الرئيسي / البانر */
+/* حاوية صورة المقال الرئيسي */
 .hero-wrapper,
 .hero-container,
 .hero-card,
@@ -175,7 +171,7 @@ body {
   position: relative;
 }
 
-/* ضبط صورة المقال الرئيسي لمنع القص وظهور الوجوه كاملة */
+/* صورة المقال الرئيسي - تمنع قص الرؤوس وتضبط المقاس */
 .hero-wrapper img,
 .hero-container img,
 .hero-card img,
@@ -185,14 +181,14 @@ body {
 .main-article-img {
   width: 100%;
   height: 420px;               /* ارتفاع متناسق */
-  max-height: 55vh;            /* عدم التمدد الزائد في الشاشات العريضة */
-  aspect-ratio: 16 / 9;        /* نسبة أبعاد الصور القياسية */
-  object-fit: cover;           /* تغطية الإطار بنعومة */
-  object-position: top center; /* إظهار رؤوس الشخصيات واللاعبين دون قص */
+  max-height: 52vh;
+  aspect-ratio: 16 / 9;        /* أبعاد قياسية */
+  object-fit: cover;
+  object-position: top center; /* إظهار الوجوه والرؤوس بالكامل */
   display: block;
 }
 
-/* صور بطاقات الأخبار في الشبكة (News Grid) */
+/* صور بطاقات الأخبار في الشبكة */
 .news-card img,
 .article-card img,
 .card-image img {
@@ -206,7 +202,7 @@ body {
   display: block;
 }
 
-/* التجاوب مع شاشات الهواتف والأجهزة اللوحية */
+/* تجاوب الصور على الهواتف والشاشات الصغيرة */
 @media (max-width: 768px) {
   .hero-wrapper img,
   .hero-container img,
@@ -214,23 +210,17 @@ body {
   .hero-img,
   .hero-image,
   .featured-article img {
-    height: 240px;             /* مقاس مريح ومناسب للهاتف */
+    height: 230px;             /* تقليل الارتفاع على الموبايل */
   }
 
   .news-card img,
   .article-card img {
-    height: 180px;
-  }
-  
-  .ticker-badge {
-    padding: 0 0.9rem;
-    font-size: 0.8rem;
+    height: 175px;
   }
 }
 
-
 /* ==========================================
-   3. CARDS, MATCHES & LEAGUE TABLES
+   3. MATCHES, TABS & INTERACTIVE ELEMENTS
    ========================================== */
 
 /* Card Hover Effects */
@@ -243,7 +233,7 @@ body {
   border-color: rgba(34, 197, 94, 0.4);
 }
 
-/* Horizontal Match Row Design */
+/* Horizontal Match Row */
 .match-row-item {
   background-color: #151c2a;
   border: 1px solid rgba(255, 255, 255, 0.06);
