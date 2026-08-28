@@ -125,7 +125,9 @@ export class SportsApiService {
 
         this.liveNewsCache = curatedNews;
         this.lastFetchTime = Date.now();
-        this.data.news = curatedNews;
+       // الحفاظ على المنشورات اليدوية وإبقاؤها دائماً في أعلى الموقع
+const manualPosts = (this.data.news || []).filter(item => item.id && item.id.startsWith('manual-'));
+this.data.news = [...manualPosts, ...curatedNews];
         this._saveState();
 
         return curatedNews;
