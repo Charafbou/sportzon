@@ -56,7 +56,7 @@ body {
 .ticker-content {
   display: inline-block;
   padding-left: 100%;
-  animation: ticker-move 40s linear infinite;
+  animation: ticker-move 110s linear infinite;
 }
 
 .ticker-content:hover {
