@@ -27,44 +27,33 @@
     <div class="flex items-center justify-between pb-6 mb-8 border-b border-gray-800">
       <div>
         <h1 class="text-3xl font-extrabold text-emerald-400">لوحة نشر المقالات</h1>
-        <p class="text-gray-400 text-sm mt-1">أضف خبراً جديداً مع رفع الصورة مباشرة من جهازك</p>
+        <p class="text-gray-400 text-sm mt-1">أضف خبراً جديداً وسيظهر مباشرة في الموقع</p>
       </div>
       <a href="./index.html" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-xl text-sm transition">الرجوع للموقع ⬅️</a>
     </div>
 
     <!-- نموذج إضافة الخبر -->
     <div class="bg-[#121820] border border-gray-800 rounded-2xl p-6 mb-8 shadow-xl">
-      <form id="post-form" onsubmit="publishPost(event)" class="space-y-5">
-        
-        <!-- عنوان الخبر -->
+      <form id="post-form" onsubmit="publishPost(event)" class="space-y-4">
         <div>
-          <label class="block text-sm font-semibold mb-2">عنوان الخبر <span class="text-red-400">*</span></label>
+          <label class="block text-sm font-semibold mb-2">عنوان الخبر</label>
           <input type="text" id="post-title" required placeholder="مثال: ريال مدريد يعلن التعاقد مع نجم جديد..." class="w-full bg-[#0b0f19] border border-gray-700 rounded-xl p-3 focus:outline-none focus:border-emerald-500">
         </div>
 
-        <!-- رفع الصورة مباشرة من الجهاز أو إدخال رابط -->
-        <div>
-          <label class="block text-sm font-semibold mb-2">صورة المقال</label>
-          
-          <!-- صندوق رفع الملف -->
-          <div id="drop-zone" onclick="document.getElementById('post-file').click()" class="border-2 border-dashed border-gray-700 hover:border-emerald-500/60 bg-[#0b0f19] rounded-2xl p-6 text-center cursor-pointer transition">
-            <input type="file" id="post-file" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
-            <div id="upload-prompt" class="space-y-2">
-              <div class="text-3xl">📁</div>
-              <p class="text-sm font-bold text-emerald-400">اضغط لاختيار صورة من جهازك / هاتفك</p>
-              <p class="text-xs text-gray-500">يدعم صيغ JPG، PNG، WEBP (يتم تحسين الحجم تلقائياً)</p>
-            </div>
-            
-            <!-- حاوية معاينة الصورة -->
-            <div id="preview-wrapper" class="hidden relative mt-2">
-              <img id="image-preview" src="" alt="معاينة الصورة" class="max-h-56 mx-auto rounded-xl border border-emerald-500/40 object-cover shadow-lg">
-              <button type="button" onclick="removeSelectedImage(event)" class="mt-3 px-3 py-1 bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white text-xs rounded-lg transition">إلغاء الصورة ✕</button>
-            </div>
+        <!-- حقل رفع الصورة من الجهاز أو الرابط -->
+        <div class="bg-[#0b0f19] border border-gray-700/60 rounded-xl p-4">
+          <label class="block text-sm font-semibold mb-2 text-emerald-400">📷 صورة المقال</label>
+          <div class="flex flex-col md:flex-row gap-3 items-center">
+            <label class="w-full md:w-auto flex-1 cursor-pointer bg-gray-800 hover:bg-gray-700 text-center py-3 px-4 rounded-xl border border-dashed border-gray-600 transition flex items-center justify-center gap-2 text-sm">
+              <span>📁 اختر صورة من جهازك</span>
+              <input type="file" id="post-image-file" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+            </label>
+            <span class="text-gray-500 text-xs font-bold">أو</span>
+            <input type="url" id="post-image-url" placeholder="الصق رابط صورة خارجية..." class="flex-1 w-full bg-[#121820] border border-gray-700 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500" dir="ltr" oninput="handleUrlInput(event)">
           </div>
 
-          <!-- خيار إدخال رابط يدوي (اختياري) -->
-          <div class="mt-3">
-            <input type="url" id="post-image-url" placeholder="أو ضع رابط صورة خارجي هنا (اختياري)..." class="w-full bg-[#0b0f19] border border-gray-700/60 rounded-xl p-2.5 text-xs focus:outline-none focus:border-emerald-500" dir="ltr" oninput="handleUrlInput(event)">
+          <div id="image-preview-wrapper" class="mt-3 hidden">
+            <img id="image-preview" src="" class="max-h-48 rounded-xl object-cover border border-emerald-500/50">
           </div>
         </div>
 
@@ -91,13 +80,11 @@
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-2">نص المقال بالكامل <span class="text-red-400">*</span></label>
+          <label class="block text-sm font-semibold mb-2">نص المقال بالكامل</label>
           <textarea id="post-content" rows="6" required placeholder="اكتب تفاصيل الخبر هنا..." class="w-full bg-[#0b0f19] border border-gray-700 rounded-xl p-3 focus:outline-none focus:border-emerald-500"></textarea>
         </div>
 
-        <button type="submit" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-lg rounded-xl transition shadow-lg flex items-center justify-center gap-2">
-          <span>🚀 نشر الخبر الآن</span>
-        </button>
+        <button type="submit" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-lg rounded-xl transition shadow-lg">🚀 نشر الخبر الآن</button>
       </form>
     </div>
 
@@ -108,11 +95,8 @@
 
   <script>
     const STORAGE_KEY = 'sz_sports_data_v5';
-    const MANUAL_POSTS_KEY = 'sz_manual_posts';
     const PASSWORD = 'charafsportzon';
-    const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80';
-
-    let currentImageData = ''; // لتخزين كود الصورة المضغوطة
+    let currentImageData = '';
 
     function checkPassword() {
       const input = document.getElementById('admin-pass').value;
@@ -124,7 +108,6 @@
       }
     }
 
-    // معالجة وضغط الصورة المرفوعة من الجهاز
     function handleFileSelect(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -134,20 +117,17 @@
         const img = new Image();
         img.src = event.target.result;
         img.onload = function() {
-          // ضغط أبعاد الصورة لتقليل حجم التخزين وضمان سرعة الموقع
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 950;
           const scale = MAX_WIDTH / img.width;
-          
           canvas.width = img.width > MAX_WIDTH ? MAX_WIDTH : img.width;
           canvas.height = img.width > MAX_WIDTH ? (img.height * scale) : img.height;
-
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-          // تحويل الصورة لصيغة JPEG خفيفة وسريعة التحميل
           currentImageData = canvas.toDataURL('image/jpeg', 0.82);
-          showPreview(currentImageData);
+          
+          document.getElementById('image-preview').src = currentImageData;
+          document.getElementById('image-preview-wrapper').classList.remove('hidden');
           document.getElementById('post-image-url').value = '';
         };
       };
@@ -158,27 +138,12 @@
       const url = e.target.value.trim();
       if (url) {
         currentImageData = url;
-        showPreview(url);
-        document.getElementById('post-file').value = '';
+        document.getElementById('image-preview').src = url;
+        document.getElementById('image-preview-wrapper').classList.remove('hidden');
       } else {
-        removeSelectedImage();
+        currentImageData = '';
+        document.getElementById('image-preview-wrapper').classList.add('hidden');
       }
-    }
-
-    function showPreview(src) {
-      document.getElementById('image-preview').src = src;
-      document.getElementById('preview-wrapper').classList.remove('hidden');
-      document.getElementById('upload-prompt').classList.add('hidden');
-    }
-
-    function removeSelectedImage(e) {
-      if (e) e.stopPropagation();
-      currentImageData = '';
-      document.getElementById('post-file').value = '';
-      document.getElementById('post-image-url').value = '';
-      document.getElementById('image-preview').src = '';
-      document.getElementById('preview-wrapper').classList.add('hidden');
-      document.getElementById('upload-prompt').classList.remove('hidden');
     }
 
     function getData() {
@@ -195,21 +160,23 @@
       const content = document.getElementById('post-content').value.trim();
       const summary = document.getElementById('post-summary').value.trim() || title;
       const category = document.getElementById('post-category').value;
-      const author = document.getElementById('post-author').value.trim() || 'SPORT ZONE';
+      const author = document.getElementById('post-author').value || 'SPORT ZONE';
       
-      const finalImage = currentImageData || document.getElementById('post-image-url').value.trim() || DEFAULT_IMAGE;
-      const postId = 'manual-post-' + Date.now();
+      let image = currentImageData || document.getElementById('post-image-url').value.trim();
+      if (!image) {
+        image = 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80';
+      }
 
       const newPost = {
-        id: postId,
+        id: 'manual-post-' + Date.now(),
         title: title,
         summary: summary,
         content: content,
         category: category,
         categorySlug: 'premier',
-        image: finalImage,
-        imageUrl: finalImage,
-        img: finalImage,
+        image: image,
+        imageUrl: image,
+        img: image,
         author: author,
         date: 'منذ قليل',
         readTime: '3 دقائق',
@@ -224,34 +191,18 @@
         comments: []
       };
 
-      // 1. الحفظ في الحالة الرئيسية
       const data = getData();
       if (!Array.isArray(data.news)) data.news = [];
-      data.news.unshift(newPost);
+      data.news.unshift(newPost); // إدراج المقال في أول القائمة
 
-      // إضافة العنوان إلى شريط الأخبار أيضاً
       if (!Array.isArray(data.ticker)) data.ticker = [];
       data.ticker.unshift(title);
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-      // 2. الحفظ في مفتاح المقالات اليدوية للأمان
-      try {
-        let mPosts = [];
-        const mSaved = localStorage.getItem(MANUAL_POSTS_KEY);
-        if (mSaved) {
-          const parsed = JSON.parse(mSaved);
-          if (Array.isArray(parsed)) mPosts = parsed;
-        }
-        mPosts.unshift(newPost);
-        localStorage.setItem(MANUAL_POSTS_KEY, JSON.stringify(mPosts));
-      } catch(err) {}
-
-      alert(' تم نشر الخبر بالصورة بنجاح!');
-      
-      // تفريغ النموذج وإعادة ضبط المعاينة
+      alert(' تم نشر الخبر بنجاح!');
       document.getElementById('post-form').reset();
-      removeSelectedImage();
+      currentImageData = '';
+      document.getElementById('image-preview-wrapper').classList.add('hidden');
       loadPostsList();
     }
 
@@ -260,19 +211,6 @@
         const data = getData();
         data.news = (data.news || []).filter(item => item.id !== id);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-        try {
-          let mPosts = [];
-          const mSaved = localStorage.getItem(MANUAL_POSTS_KEY);
-          if (mSaved) {
-            const parsed = JSON.parse(mSaved);
-            if (Array.isArray(parsed)) {
-              mPosts = parsed.filter(item => item.id !== id);
-              localStorage.setItem(MANUAL_POSTS_KEY, JSON.stringify(mPosts));
-            }
-          }
-        } catch(e) {}
-
         loadPostsList();
       }
     }
@@ -282,22 +220,21 @@
       const listEl = document.getElementById('posts-list');
       listEl.innerHTML = '';
 
-      const manualNews = (data.news || []).filter(item => 
+      const manualItems = (data.news || []).filter(item => 
         item.isManual || (item.id && item.id.toString().startsWith('manual'))
       );
 
-      if (manualNews.length === 0) {
-        listEl.innerHTML = '<p class="text-gray-500 text-sm">لا توجد مقالات منشورة يدوياً حالياً.</p>';
+      if (manualItems.length === 0) {
+        listEl.innerHTML = '<p class="text-gray-500 text-sm">لا توجد مقالات منشورة حالياً.</p>';
         return;
       }
 
-      manualNews.forEach(item => {
+      manualItems.forEach(item => {
         const itemEl = document.createElement('div');
         itemEl.className = 'flex items-center justify-between p-4 bg-[#121820] border border-gray-800 rounded-xl';
-        const displayImg = item.image || item.imageUrl || DEFAULT_IMAGE;
         itemEl.innerHTML = `
           <div class="flex items-center gap-4">
-            <img src="${displayImg}" class="w-12 h-12 rounded-lg object-cover border border-gray-700">
+            <img src="${item.image || item.imageUrl}" class="w-12 h-12 rounded-lg object-cover">
             <div>
               <h3 class="font-bold text-sm text-white">${item.title}</h3>
               <span class="text-xs text-emerald-400">${item.category} - ${item.date}</span>
