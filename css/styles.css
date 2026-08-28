@@ -1,8 +1,8 @@
 /* ==========================================
-   SPORT ZONE - Senior Sports UI/UX Architecture (Chronological Tabs & Crest Fix)
+   SPORT ZONE - Complete Senior Sports UI/UX Architecture
    Domain: sportzon.biz • Official Email: contact@sportzon.biz
-   Yesterday / Today / Tomorrow Time Filters
-   Aston Villa & Unique Club Crest Verification
+   Includes: Fixed Aspect Ratios, Seamless High-Contrast Ticker, 
+   Responsive Hero Cards, Match Filters & Glassmorphism
    ========================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
@@ -26,6 +26,7 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  direction: rtl; /* اتجاه الموقع من اليمين لليسار */
 }
 
 /* Glassmorphism Panels */
@@ -45,28 +46,192 @@ body {
   scrollbar-width: none;
 }
 
-/* Ticker Animation */
+/* ==========================================
+   1. SEAMLESS NEWS TICKER (MODERN SPORTY COLORS)
+   ========================================== */
+
+/* الحاوية الرئيسية لشريط الأخبار */
+.ticker-container {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg, #090e17 0%, #111a2e 50%, #090e17 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 2.5px solid var(--brand-neon); /* خط نيون أخضر رياضي أسفل الشريط */
+  height: 46px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  direction: rtl;
+}
+
+/* شارة "عاجل" الحمراء المميزة */
+.ticker-badge {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 0.88rem;
+  padding: 0 1.3rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: -4px 0 15px rgba(239, 68, 68, 0.4);
+}
+
+/* النقطة النابضة الحية داخل شارة عاجل */
+.ticker-badge::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #ffffff;
+  animation: pulse-live 1.2s infinite ease-in-out;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.8); }
+}
+
+/* حاوية تدفق الأخبار */
 .ticker-wrap {
-  width: 100%;
+  flex: 1;
   overflow: hidden;
   white-space: nowrap;
-  box-sizing: border-box;
+  display: flex;
 }
 
+/* محتوى الأخبار بحركة مستمرة ومريحة */
 .ticker-content {
-  display: inline-block;
-  padding-left: 100%;
-  animation: ticker-move 110s linear infinite;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: ticker-smooth 45s linear infinite; /* سرعة هادئة ومناسبة للقراءة */
+  will-change: transform;
 }
 
-.ticker-content:hover {
+/* إيقاف مؤقت لحركة الشريط عند مرور الفأرة للقراءة */
+.ticker-wrap:hover .ticker-content {
   animation-play-state: paused;
+  cursor: pointer;
 }
 
-@keyframes ticker-move {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(-100%, 0, 0); }
+/* عناصر الأخبار والنصوص */
+.ticker-item,
+.ticker-content a,
+.ticker-content span {
+  color: #ffffff !important;   /* لون أبيض ناصع عالي الوضوح */
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s ease;
 }
+
+/* تلوين العنوان بالأخضر النيون عند مرور الماوس */
+.ticker-item:hover,
+.ticker-content a:hover {
+  color: var(--brand-neon) !important;
+}
+
+/* فاصل كرة القدم المضيء بين الأخبار */
+.ticker-item::after {
+  content: "⚽";
+  margin-right: 1.5rem;
+  font-size: 0.8rem;
+  filter: drop-shadow(0 0 2px rgba(255,255,255,0.6));
+}
+
+/* الحركة الدائرية الانسيابية */
+@keyframes ticker-smooth {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(100%, 0, 0); }
+}
+
+
+/* ==========================================
+   2. ARTICLE & HERO IMAGE OPTIMIZATIONS (FIXED)
+   ========================================== */
+
+/* حاوية صورة المقال الرئيسي / البانر */
+.hero-wrapper,
+.hero-container,
+.hero-card,
+.featured-article,
+.main-news-hero {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 1.5rem auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  position: relative;
+}
+
+/* ضبط صورة المقال الرئيسي لمنع القص وظهور الوجوه كاملة */
+.hero-wrapper img,
+.hero-container img,
+.hero-card img,
+.hero-img,
+.hero-image,
+.featured-article img,
+.main-article-img {
+  width: 100%;
+  height: 420px;               /* ارتفاع متناسق */
+  max-height: 55vh;            /* عدم التمدد الزائد في الشاشات العريضة */
+  aspect-ratio: 16 / 9;        /* نسبة أبعاد الصور القياسية */
+  object-fit: cover;           /* تغطية الإطار بنعومة */
+  object-position: top center; /* إظهار رؤوس الشخصيات واللاعبين دون قص */
+  display: block;
+}
+
+/* صور بطاقات الأخبار في الشبكة (News Grid) */
+.news-card img,
+.article-card img,
+.card-image img {
+  width: 100%;
+  height: 200px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: top center;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  display: block;
+}
+
+/* التجاوب مع شاشات الهواتف والأجهزة اللوحية */
+@media (max-width: 768px) {
+  .hero-wrapper img,
+  .hero-container img,
+  .hero-card img,
+  .hero-img,
+  .hero-image,
+  .featured-article img {
+    height: 240px;             /* مقاس مريح ومناسب للهاتف */
+  }
+
+  .news-card img,
+  .article-card img {
+    height: 180px;
+  }
+  
+  .ticker-badge {
+    padding: 0 0.9rem;
+    font-size: 0.8rem;
+  }
+}
+
+
+/* ==========================================
+   3. CARDS, MATCHES & LEAGUE TABLES
+   ========================================== */
 
 /* Card Hover Effects */
 .card-hover {
@@ -78,7 +243,7 @@ body {
   border-color: rgba(34, 197, 94, 0.4);
 }
 
-/* HORIZONTAL MATCH ROW DESIGN */
+/* Horizontal Match Row Design */
 .match-row-item {
   background-color: #151c2a;
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -103,7 +268,7 @@ body {
   color: #9ca3af;
 }
 .date-tab-btn.active {
-  background-color: #22c55e;
+  background-color: var(--brand-green);
   color: #052e16;
   border-color: #4ade80;
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
@@ -111,7 +276,7 @@ body {
 
 /* Standings Qualification Highlights */
 .row-cl {
-  border-right: 4px solid #22c55e !important;
+  border-right: 4px solid var(--brand-green) !important;
   background: rgba(34, 197, 94, 0.05);
 }
 .row-el {
