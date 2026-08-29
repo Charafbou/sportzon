@@ -23,7 +23,14 @@ export default async function handler(req, res) {
     const dateFrom = typeof req.query?.dateFrom === "string" ? req.query.dateFrom : "";
     const dateTo = typeof req.query?.dateTo === "string" ? req.query.dateTo : "";
 
-    const allowedLeagues = ["PL", "PD", "SA", "BL1", "CL"];
+    const allowedLeagues = [
+  "PL",
+  "PD",
+  "SA",
+  "BL1",
+  "FL1",
+  "CL"
+];
     if (!allowedLeagues.includes(league)) {
       return res.status(400).json({ error: "Invalid league", allowedLeagues });
     }
