@@ -1,1384 +1,3452 @@
 /* =========================================================
-   SPORT ZONE - Production Sports SPA
-   - Live Kooora & Sports RSS News Ticker with Auto-Refresh (60s)
-   - Yesterday / Today / Tomorrow filtering
-   - Local device timezone
-   - Dynamic league matches
-   - Dynamic standings
-   - Null-safe DOM
-   ========================================================= */
+   SPORT ZONE
+   Main Application
+   sportzon.biz
+========================================================= */
 
-(function () {
+(() => {
+
   "use strict";
 
-  const OFFICIAL_DOMAIN = "sportzon.biz";
-  const CONTACT_EMAIL = "contact@sportzon.biz";
-  const POLL_STORAGE_KEY = "sz_user_poll_vote_v2026";
 
-  const FALLBACK_CREST =
-    "https://cdn-icons-png.flaticon.com/512/53/53283.png";
+  /* =======================================================
+     CONFIG
+  ======================================================= */
 
-  const COMPETITIONS = {
+  const CONFIG = {
+
+    API_URL: "/api/sports",
+
+    RSS_TIMEOUT: 9000,
+
+    ARTICLES_STORAGE:
+      "sz_sports_data_v5",
+
+    DEFAULT_LEAGUE:
+      "all",
+
+    DEFAULT_DATE:
+      "today",
+
+    MAX_NEWS:
+      40
+
+  };
+
+
+  /* =======================================================
+     LEAGUES
+  ======================================================= */
+
+  const LEAGUES = {
+
+    all: {
+      name: "الرئيسية",
+      flag: "🏠",
+      api: null
+    },
+
+    botola: {
+      name: "البطولة برو",
+      flag: "🇲🇦",
+      api: null
+    },
+
+    PD: {
+      name: "الدوري الإسباني",
+      flag: "🇪🇸",
+      api: "PD"
+    },
+
     PL: {
       name: "الدوري الإنجليزي الممتاز",
       flag: "🏴",
-      id: "PL"
+      api: "PL"
     },
-    PD: {
-      name: "الدوري الإسباني (الليغا)",
-      flag: "🇪🇸",
-      id: "PD"
-    },
+
     SA: {
-      name: "الدوري الإيطالي (الكالتشيو)",
+      name: "الدوري الإيطالي",
       flag: "🇮🇹",
-      id: "SA"
+      api: "SA"
     },
+
     BL1: {
-      name: "الدوري الألماني (البوندسليغا)",
+      name: "الدوري الألماني",
       flag: "🇩🇪",
-      id: "BL1"
+      api: "BL1"
     },
+
+    FL1: {
+      name: "الدوري الفرنسي",
+      flag: "🇫🇷",
+      api: "FL1"
+    },
+
     CL: {
       name: "دوري أبطال أوروبا",
       flag: "🏆",
-      id: "CL"
+      api: "CL"
     }
+
   };
 
-  const SIDEBAR_LEAGUES = [
+
+  /* =======================================================
+     RSS SOURCES
+  ======================================================= */
+
+  const RSS_SOURCES = [
+
     {
-      name: "الدوري الإنجليزي الممتاز",
-      flag: "🏴",
-      code: "PL"
+      name: "Google News",
+      url:
+        "https://news.google.com/rss/search?q=كرة+القدم+رياضة&hl=ar&gl=MA&ceid=MA:ar"
     },
+
     {
-      name: "الدوري الإسباني",
-      flag: "🇪🇸",
-      code: "PD"
+      name: "Google News Football",
+      url:
+        "https://news.google.com/rss/search?q=كرة+القدم+المغرب+ريال+مدريد+برشلونة&hl=ar&gl=MA&ceid=MA:ar"
     },
+
     {
-      name: "الدوري الإيطالي",
-      flag: "🇮🇹",
-      code: "SA"
+      name: "Google News Premier League",
+      url:
+        "https://news.google.com/rss/search?q=الدوري+الإنجليزي&hl=ar&gl=MA&ceid=MA:ar"
     },
+
     {
-      name: "الدوري الألماني",
-      flag: "🇩🇪",
-      code: "BL1"
+      name: "Google News La Liga",
+      url:
+        "https://news.google.com/rss/search?q=الدوري+الإسباني&hl=ar&gl=MA&ceid=MA:ar"
     },
+
     {
-      name: "دوري أبطال أوروبا",
-      flag: "🏆",
-      code: "CL"
+      name: "Google News Morocco",
+      url:
+        "https://news.google.com/rss/search?q=المنتخب+المغربي&hl=ar&gl=MA&ceid=MA:ar"
     }
+
   ];
 
-  /* =========================================================
-     FALLBACK STANDINGS
-     ========================================================= */
 
-  const NATIVE_STANDINGS_MAP = {
-    PL: [
-      {
-        position: 1,
-        team: {
-          name: "ليفربول",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg"
-        },
-        points: 18,
-        playedGames: 7,
-        goalsFor: 13,
-        goalsAgainst: 2
-      },
-      {
-        position: 2,
-        team: {
-          name: "مانشستر سيتي",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg"
-        },
-        points: 17,
-        playedGames: 7,
-        goalsFor: 17,
-        goalsAgainst: 8
-      },
-      {
-        position: 3,
-        team: {
-          name: "أرسنال",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg"
-        },
-        points: 17,
-        playedGames: 7,
-        goalsFor: 15,
-        goalsAgainst: 6
-      },
-      {
-        position: 4,
-        team: {
-          name: "أستون فيلا",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/f/f9/Aston_Villa_FC_crest_%282016%29.svg"
-        },
-        points: 14,
-        playedGames: 7,
-        goalsFor: 12,
-        goalsAgainst: 9
-      }
-    ],
+  /* =======================================================
+     STATE
+  ======================================================= */
 
-    PD: [
-      {
-        position: 1,
-        team: {
-          name: "برشلونة",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona.svg"
-        },
-        points: 24,
-        playedGames: 9,
-        goalsFor: 28,
-        goalsAgainst: 10
-      },
-      {
-        position: 2,
-        team: {
-          name: "ريال مدريد",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"
-        },
-        points: 21,
-        playedGames: 9,
-        goalsFor: 19,
-        goalsAgainst: 6
-      },
-      {
-        position: 3,
-        team: {
-          name: "أتلتيكو مدريد",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg"
-        },
-        points: 17,
-        playedGames: 9,
-        goalsFor: 13,
-        goalsAgainst: 5
-      },
-      {
-        position: 4,
-        team: {
-          name: "جيرونا",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/9/90/Girona_FC_Logo.svg"
-        },
-        points: 12,
-        playedGames: 9,
-        goalsFor: 11,
-        goalsAgainst: 12
-      }
-    ],
+  const state = {
 
-    SA: [
-      {
-        position: 1,
-        team: {
-          name: "نابولي",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/commons/2/28/S.S.C._Napoli_logo.svg"
-        },
-        points: 16,
-        playedGames: 7,
-        goalsFor: 14,
-        goalsAgainst: 5
-      },
-      {
-        position: 2,
-        team: {
-          name: "إنتر ميلان",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg"
-        },
-        points: 14,
-        playedGames: 7,
-        goalsFor: 16,
-        goalsAgainst: 9
-      },
-      {
-        position: 3,
-        team: {
-          name: "يوفنتوس",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/commons/b/bc/Juventus_FC_2017_icon_%28black%29.svg"
-        },
-        points: 13,
-        playedGames: 7,
-        goalsFor: 10,
-        goalsAgainst: 1
-      }
-    ],
+    league:
+      CONFIG.DEFAULT_LEAGUE,
 
-    BL1: [
-      {
-        position: 1,
-        team: {
-          name: "بايرن ميونخ",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg"
-        },
-        points: 14,
-        playedGames: 6,
-        goalsFor: 20,
-        goalsAgainst: 7
-      },
-      {
-        position: 2,
-        team: {
-          name: "أربيل لايبزيج",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/0/04/RB_Leipzig_2014_logo.svg"
-        },
-        points: 14,
-        playedGames: 6,
-        goalsFor: 9,
-        goalsAgainst: 2
-      },
-      {
-        position: 3,
-        team: {
-          name: "باير ليفركوزن",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/5/59/Bayer_04_Leverkusen_logo.svg"
-        },
-        points: 11,
-        playedGames: 6,
-        goalsFor: 16,
-        goalsAgainst: 12
-      }
-    ],
+    date:
+      CONFIG.DEFAULT_DATE,
 
-    CL: [
-      {
-        position: 1,
-        team: {
-          name: "برشلونة",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona.svg"
-        },
-        points: 6,
-        playedGames: 2,
-        goalsFor: 7,
-        goalsAgainst: 2
-      },
-      {
-        position: 2,
-        team: {
-          name: "ريال مدريد",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"
-        },
-        points: 3,
-        playedGames: 2,
-        goalsFor: 3,
-        goalsAgainst: 2
-      },
-      {
-        position: 3,
-        team: {
-          name: "مانشستر سيتي",
-          crest:
-            "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg"
-        },
-        points: 4,
-        playedGames: 2,
-        goalsFor: 4,
-        goalsAgainst: 0
-      }
-    ]
+    search:
+      "",
+
+    articles:
+      [],
+
+    matches:
+      [],
+
+    standings:
+      [],
+
+    loading:
+      false,
+
+    articleView:
+      false
+
   };
 
-  const EDITORIAL_ARTICLES = [
-    {
-      id: "art-1",
-      title: "التحولات الهجومية وبناء اللعب من الخلف في الكرة الحديثة",
-      summary:
-        "دراسة تحليلات التمرير والضغط العالي وتحركات خط الوسط في كرة القدم الأوروبية.",
-      category: "تحليل تكتيكي ♟️",
-      url: "./articles/tactics-modern-football.html",
-      image:
-        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80"
-    },
-    {
-      id: "art-2",
-      title: "التوازن المالي وقواعد اللعب المالي النظيف في صفقات اللاعبين",
-      summary:
-        "قراءة في اقتصاديات كرة القدم وقواعد اللعب المالي النظيف والتحولات المالية بالميركاتو.",
-      category: "اقتصاد الرياضة 💰",
-      url: "./articles/mercato-economics.html",
-      image:
-        "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=800&q=80"
-    }
-  ];
 
-  /* =========================================================
-     DATE HELPERS
-     ========================================================= */
+  /* =======================================================
+     DOM
+  ======================================================= */
 
-  function getLocalDateString(date) {
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
-      date = new Date();
-    }
+  const DOM = {};
 
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
 
-    return `${year}-${month}-${day}`;
-  }
+  function cacheDOM() {
 
-  function getStrictDateStrings() {
-    const now = new Date();
+    DOM.home =
+      document.getElementById("mainHomeView");
 
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
+    DOM.article =
+      document.getElementById("singleArticleView");
 
-    const tomorrow = new Date(now);
-    tomorrow.setDate(now.getDate() + 1);
+    DOM.ticker =
+      document.getElementById("tickerMatchesContainer");
 
-    return {
-      todayStr: getLocalDateString(now),
-      yesterdayStr: getLocalDateString(yesterday),
-      tomorrowStr: getLocalDateString(tomorrow)
-    };
-  }
+    DOM.hero =
+      document.getElementById("heroArticleContainer");
 
-  function formatFormattedDateString(offsetDays = 0) {
-    const date = new Date();
-    date.setDate(date.getDate() + offsetDays);
+    DOM.news =
+      document.getElementById("newsGridContainer");
 
-    try {
-      return new Intl.DateTimeFormat("ar-MA", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric"
-      }).format(date);
-    } catch (error) {
-      return date.toLocaleDateString("ar");
-    }
-  }
+    DOM.matches =
+      document.getElementById("todayMatchesWidget");
 
-  function getMatchLocalDate(utcDate) {
-    if (!utcDate) {
-      return null;
-    }
+    DOM.standings =
+      document.getElementById("standingsTableBody");
 
-    const date = new Date(utcDate);
-
-    if (isNaN(date.getTime())) {
-      return null;
-    }
-
-    return getLocalDateString(date);
-  }
-
-  function getMatchLocalTime(utcDate) {
-    if (!utcDate) {
-      return "--:--";
-    }
-
-    const date = new Date(utcDate);
-
-    if (isNaN(date.getTime())) {
-      return "--:--";
-    }
-
-    try {
-      return new Intl.DateTimeFormat("ar-MA", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      }).format(date);
-    } catch (error) {
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      });
-    }
-  }
-
-  /* =========================================================
-     LIVE RSS TICKER WITH MULTI-SOURCE & AUTO-REFRESH
-     ========================================================= */
-
-  let lastFetchedTickerHTML = null;
-
-  async function fetchNewsTicker() {
-    const ticker =
-      document.getElementById("newsTicker") ||
-      document.querySelector(".ticker-content");
-
-    if (!ticker) {
-      return;
-    }
-
-    const fallbackText =
-      "⚽ تغطية مستمرة لأحدث الأخبار والنتائج والمباريات الرياضية عبر SPORT ZONE";
-
-  const rssEndpoints = [
-    // beIN Sports (تغطية عالمية وعربية)
-    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.beinsports.com/ar-mena/rss"),
-    // المغرب (Le360 Sport / هسبريس رياضة)
-    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://ar.le360.ma/rss/sports.xml"),
-    // السعودية (صحيفة الرياضية السعودية)
-    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://arriyadiyah.com/rss"),
-    // الجزائر (أخبار الرياضة الجزائرية - الشروق رياضة)
-    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.echoroukonline.com/sport/feed"),
-    // تونس (أخبار الرياضة التونسية - موزاييك إف إم رياضة)
-    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.mosaiquefm.net/ar/rss/sport")
-  ];
-
-    let items = [];
-
-    for (const apiUrl of rssEndpoints) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-        const response = await fetch(apiUrl, {
-          method: "GET",
-          cache: "no-store",
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data && Array.isArray(data.items) && data.items.length > 0) {
-            items = data.items.filter(item => item && item.title).slice(0, 12);
-            if (items.length > 0) break;
-          }
-        }
-      } catch (e) {}
-    }
-
-    if (items.length > 0) {
-      lastFetchedTickerHTML = items
-        .map(item => {
-          const title = escapeHTML(String(item.title));
-          const link = safeURL(item.link);
-
-          return `
-            <a
-              href="${link}"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-block mx-5 text-xs font-bold text-gray-200 hover:text-emerald-400 transition-colors whitespace-nowrap"
-            >
-              ⚽ ${title}
-            </a>
-          `;
-        })
-        .join("");
-
-      ticker.innerHTML = lastFetchedTickerHTML;
-      startTickerAnimation(ticker);
-    } else {
-      if (!lastFetchedTickerHTML) {
-        lastFetchedTickerHTML = `
-          <span class="text-xs text-slate-300 font-bold whitespace-nowrap">
-            ${fallbackText}
-          </span>
-        `;
-      }
-      ticker.innerHTML = lastFetchedTickerHTML;
-      startTickerAnimation(ticker);
-    }
-  }
-
-  function startTickerAnimation(ticker) {
-    if (!ticker) {
-      return;
-    }
-
-    const parent = ticker.parentElement;
-
-    if (!parent) {
-      return;
-    }
-
-    ticker.style.display = "inline-block";
-    ticker.style.whiteSpace = "nowrap";
-    ticker.style.animation = "szTickerMove 45s linear infinite";
-
-    if (!document.getElementById("sz-ticker-style")) {
-      const style = document.createElement("style");
-
-      style.id = "sz-ticker-style";
-
-      style.textContent = `
-        @keyframes szTickerMove {
-          from {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(-100%);
-          }
-        }
-
-        .date-tab-btn {
-          padding: .7rem 1rem;
-          border-radius: .8rem;
-          color: #cbd5e1;
-          font-size: .75rem;
-          font-weight: 900;
-          transition: all .2s ease;
-          border: 1px solid transparent;
-        }
-
-        .date-tab-btn:hover {
-          background: rgba(16,185,129,.08);
-          color: #34d399;
-        }
-
-        .date-tab-btn.active {
-          background: #10b981;
-          color: #020617;
-          border-color: #34d399;
-          box-shadow: 0 5px 20px rgba(16,185,129,.15);
-        }
-
-        .match-row-item {
-          background: #161e2e;
-          border: 1px solid rgba(55,65,81,.7);
-          border-radius: 1rem;
-          padding: 1rem;
-          transition: all .2s ease;
-        }
-
-        .match-row-item:hover {
-          border-color: rgba(16,185,129,.4);
-          transform: translateY(-1px);
-        }
-      `;
-
-      document.head.appendChild(style);
-    }
-  }
-
-  function escapeHTML(str) {
-    if (!str) return "";
-    return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function safeURL(url) {
-    if (!url || typeof url !== "string") return "#";
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return escapeHTML(url);
-    }
-    return "#";
-  }
-
-  /* =========================================================
-     NATIVE SPORTS API SERVICE
-     ========================================================= */
-
-  class NativeSportsApiService {
-    static async fetchMatches(leagueCode = "PL") {
-      const endpoints = [
-        `/api/sports?type=matches&league=${encodeURIComponent(leagueCode)}`,
-        `https://corsproxy.io/?${encodeURIComponent(
-          `https://api.football-data.org/v4/competitions/${leagueCode}/matches`
-        )}`
-      ];
-
-      for (const endpoint of endpoints) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-          const response = await fetch(endpoint, {
-            method: "GET",
-            headers: {
-              "X-Auth-Token": "eba4f3dbffff48ff8dd42b3a8f11793b"
-            },
-            signal: controller.signal
-          });
-
-          clearTimeout(timeoutId);
-
-          if (!response.ok) continue;
-
-          const data = await response.json();
-
-          if (!data || !Array.isArray(data.matches)) continue;
-
-          return data.matches.map(m => {
-            const utcDate = m.utcDate;
-            const matchDate = getMatchLocalDate(utcDate);
-            const matchTime = getMatchLocalTime(utcDate);
-
-            const isLive = m.status === "IN_PLAY" || m.status === "PAUSED";
-            const isFinished = m.status === "FINISHED";
-            const homeScore = m.score?.fullTime?.home ?? 0;
-            const awayScore = m.score?.fullTime?.away ?? 0;
-
-            const homeCrest =
-              m.homeTeam?.crest ||
-              m.homeTeam?.logo ||
-              FALLBACK_CREST;
-
-            const awayCrest =
-              m.awayTeam?.crest ||
-              m.awayTeam?.logo ||
-              FALLBACK_CREST;
-
-            return {
-              id: m.id,
-              matchDate: matchDate,
-              matchTime: matchTime,
-              utcDate: utcDate,
-              leagueCode: leagueCode,
-              leagueName:
-                m.competition?.name ||
-                COMPETITIONS[leagueCode]?.name ||
-                "الدوري الممتاز",
-              team1: {
-                name: m.homeTeam?.shortName || m.homeTeam?.name || "الفريق الأول",
-                crest: homeCrest
-              },
-              team2: {
-                name: m.awayTeam?.shortName || m.awayTeam?.name || "الفريق الثاني",
-                crest: awayCrest
-              },
-              scoreDisplay:
-                isLive || isFinished
-                  ? `${homeScore} - ${awayScore}`
-                  : "- : -",
-              statusText: isLive
-                ? "مباشر ⚡"
-                : isFinished
-                ? "انتهت 🏁"
-                : "لم تبدأ",
-              isLive: isLive,
-              isFinished: isFinished
-            };
-          });
-        } catch (error) {}
-      }
-
-      return [];
-    }
-
-    static async fetchStandings(leagueCode = "PL") {
-      const endpoints = [
-        `/api/sports?type=standings&league=${encodeURIComponent(leagueCode)}`,
-        `https://corsproxy.io/?${encodeURIComponent(
-          `https://api.football-data.org/v4/competitions/${leagueCode}/standings`
-        )}`
-      ];
-
-      for (const endpoint of endpoints) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-          const response = await fetch(endpoint, {
-            method: "GET",
-            headers: {
-              "X-Auth-Token": "eba4f3dbffff48ff8dd42b3a8f11793b"
-            },
-            signal: controller.signal
-          });
-
-          clearTimeout(timeoutId);
-
-          if (!response.ok) continue;
-
-          const data = await response.json();
-
-          if (!data || !Array.isArray(data.standings)) continue;
-
-          const table = data.standings[0]?.table;
-
-          if (!Array.isArray(table) || table.length === 0) continue;
-
-          return table.map(row => ({
-            position: row.position,
-            team: {
-              name: row.team?.shortName || row.team?.name || "فريق",
-              crest: row.team?.crest || row.team?.logo || FALLBACK_CREST
-            },
-            points: row.points ?? 0,
-            playedGames: row.playedGames ?? 0,
-            goalsFor: row.goalsFor ?? 0,
-            goalsAgainst: row.goalsAgainst ?? 0
-          }));
-        } catch (error) {}
-      }
-
-      return NATIVE_STANDINGS_MAP[leagueCode] || NATIVE_STANDINGS_MAP["PL"];
-    }
-  }
-
-  /* =========================================================
-     UI COMPONENTS
-     ========================================================= */
-
-  function Header() {
-    return `
-      <header class="sticky top-0 z-50 glass-panel border-b border-gray-800/80 bg-[#0c101a]/95">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex items-center justify-between h-16 sm:h-20">
-            <a href="./index.html" class="flex items-center gap-3 cursor-pointer">
-              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-400 p-0.5 shadow-lg shadow-emerald-500/20">
-                <div class="w-full h-full bg-gray-950 rounded-[10px] flex items-center justify-center font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 text-xl sm:text-2xl">SZ</div>
-              </div>
-              <div>
-                <div class="flex items-center gap-2">
-                  <h1 class="text-xl sm:text-2xl font-black tracking-wider text-white font-sans">SPORT <span class="text-emerald-500">ZONE</span></h1>
-                  <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 rounded border border-emerald-500/30">${OFFICIAL_DOMAIN}</span>
-                </div>
-                <p class="text-[11px] text-gray-400 font-medium">المنصة الرياضية الأولى • ${OFFICIAL_DOMAIN}</p>
-              </div>
-            </a>
-
-            <div class="hidden md:flex items-center gap-4">
-              <button id="btn-manual-refresh" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-black hover:bg-emerald-500/20 transition-all">
-                <span class="animate-spin">🔄</span>
-                <span>تحديث البيانات المباشرة</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-    `;
-  }
-
-  function HeroBanner() {
-    return `
-      <section class="relative my-6 rounded-3xl overflow-hidden bg-gradient-to-r from-[#0b0f19] via-[#101726] to-[#0f172a] border border-gray-800 shadow-2xl p-6 sm:p-10">
-        <div class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center mix-blend-overlay pointer-events-none"></div>
-
-        <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div class="lg:col-span-6 space-y-4 text-right">
-            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight">
-              كل ما يخص الرياضة <br/>
-              <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">على مدار الساعة</span>
-            </h1>
-            <p class="text-xs sm:text-sm text-gray-300 max-w-md font-medium leading-relaxed">
-              أحدث الأخبار، النتائج الحية، الجداول، الإحصائيات ومقاطع الفيديو مباشرة عبر ${OFFICIAL_DOMAIN}
-            </p>
-            <div>
-              <a href="#match-center-section" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-black text-sm shadow-lg shadow-emerald-500/25 transition-all">
-                <span>استكشف الآن</span>
-                <span>›</span>
-              </a>
-            </div>
-          </div>
-
-          <div class="lg:col-span-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="bg-gray-950/80 rounded-2xl p-3 border border-gray-800/80 space-y-2">
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 rounded">📊 تحليل المباريات</span>
-              <img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=400&q=80" alt="تحليل" class="w-full h-20 object-cover rounded-xl" onerror="this.onerror=null; this.src='${FALLBACK_CREST}';" />
-              <p class="text-[11px] font-extrabold text-white leading-tight">تحليل تكتيكي شامل للمباريات الكبرى</p>
-            </div>
-
-            <div class="bg-gray-950/80 rounded-2xl p-3 border border-gray-800/80 space-y-2">
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 rounded">▶️ أهداف اليوم</span>
-              <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=400&q=80" alt="أهداف" class="w-full h-20 object-cover rounded-xl" onerror="this.onerror=null; this.src='${FALLBACK_CREST}';" />
-              <p class="text-[11px] font-extrabold text-white leading-tight">أجمل أهداف الجولة شاهد الآن</p>
-            </div>
-
-            <div class="bg-gray-950/80 rounded-2xl p-3 border border-gray-800/80 space-y-2">
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 rounded">📰 أخبار مميزة</span>
-              <img src="https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=400&q=80" alt="أخبار" class="w-full h-20 object-cover rounded-xl" onerror="this.onerror=null; this.src='${FALLBACK_CREST}';" />
-              <p class="text-[11px] font-extrabold text-white leading-tight">متابعة صفقات الميركاتو ومستجدات البطولات</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    `;
-  }
-
-  function MatchCenter({ matches = [], activeCompCode = 'PL', activeDateFilter = 'today', isLoading = false }) {
-    const offset = activeDateFilter === 'yesterday' ? -1 : activeDateFilter === 'tomorrow' ? 1 : 0;
-    const currentDateFormatted = formatFormattedDateString(offset);
-
-    return `
-      <section id="match-center-section" class="bg-[#121824] rounded-3xl p-5 sm:p-7 border border-gray-800/80 shadow-2xl space-y-5">
-        
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-800">
-          <div class="flex items-center gap-2">
-            <h2 class="text-xl font-black text-white flex items-center gap-2">
-              <span>📅 مركز المباريات الحية</span>
-            </h2>
-          </div>
-
-          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-            ${Object.keys(COMPETITIONS).map(code => `
-              <button 
-                data-comp-btn="${code}" 
-                class="px-3.5 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all border ${activeCompCode === code ? 'bg-emerald-500 text-gray-950 border-emerald-400 shadow-md' : 'bg-[#182030] text-gray-300 border-gray-800 hover:bg-gray-800'}"
-              >
-                <span>${COMPETITIONS[code].name}</span>
-              </button>
-            `).join('')}
-          </div>
-        </div>
-
-        <div class="flex items-center justify-center gap-2 sm:gap-3 p-1.5 bg-[#161e2e] rounded-2xl border border-gray-800">
-          <button data-date-tab="yesterday" class="date-tab-btn flex-1 text-center ${activeDateFilter === 'yesterday' ? 'active' : ''}">
-            ⬅ مباريات الأمس
-          </button>
-          <button data-date-tab="today" class="date-tab-btn flex-1 text-center ${activeDateFilter === 'today' ? 'active' : ''}">
-            ⚽ مباريات اليوم
-          </button>
-          <button data-date-tab="tomorrow" class="date-tab-btn flex-1 text-center ${activeDateFilter === 'tomorrow' ? 'active' : ''}">
-            ➡ مباريات الغد
-          </button>
-        </div>
-
-        <div class="date-nav-bar flex items-center justify-between text-xs font-bold text-gray-300">
-          <button id="btn-prev-date" class="w-8 h-8 rounded-lg bg-[#182030] hover:bg-emerald-500 hover:text-black flex items-center justify-center border border-gray-800 transition-colors">
-            ‹
-          </button>
-          
-          <div class="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#182030] border border-gray-800 text-white font-extrabold">
-            <span>📅</span>
-            <span>${currentDateFormatted}</span>
-          </div>
-
-          <button id="btn-next-date" class="w-8 h-8 rounded-lg bg-[#182030] hover:bg-emerald-500 hover:text-black flex items-center justify-center border border-gray-800 transition-colors">
-            ›
-          </button>
-        </div>
-
-        ${isLoading ? `
-          <div class="text-center py-12 bg-[#161e2e] rounded-2xl border border-gray-800 text-gray-400 text-sm space-y-3">
-            <span class="animate-spin text-3xl block text-emerald-400">🔄</span>
-            <p class="font-bold">جاري استعلام المباريات الحية...</p>
-          </div>
-        ` : (matches.length === 0 ? `
-          <div class="text-center py-12 bg-[#161e2e] rounded-2xl border border-gray-800/80 p-8 space-y-4">
-            <span class="text-4xl block">⚽</span>
-            <p class="text-gray-200 font-extrabold text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-              لا توجد مباريات مجدولة لهذا الدوري في هذا التاريخ
-            </p>
-          </div>
-        ` : `
-          <div class="space-y-3">
-            ${matches.map(m => {
-              const crest1 = m.team1.crest || FALLBACK_CREST;
-              const crest2 = m.team2.crest || FALLBACK_CREST;
-
-              return `
-                <div data-match-card-id="${m.id}" class="match-row-item flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer group">
-                  
-                  <div class="flex items-center gap-2.5 sm:w-1/4">
-                    <img src="${crest1}" alt="${m.leagueName}" class="w-6 h-6 object-contain" onerror="this.onerror=null; this.src='${FALLBACK_CREST}';" />
-                    <span class="text-xs font-black text-gray-300 truncate">${m.leagueName || 'الدوري الممتاز'}</span>
-                  </div>
-
-                  <div class="flex-1 flex items-center justify-between sm:justify-center gap-4 w-full">
-                    <div class="flex items-center gap-2.5 sm:w-2/5 justify-end text-left">
-                      <span class="text-xs font-black text-white text-right truncate">${m.team1.name}</span>
-                      <img src="${crest1}" alt="${m.team1.name}" class="w-7 h-7 object-contain" onerror="this.onerror=null; this.src='${FALLBACK_CREST}';" />
-                    </div>
-
-                    <div class="px-4 py-1.5 rounded-xl bg-[#0f1522] border border-gray-800 ${m.isLive ? 'text-red-400 border-red-500/40 animate-pulse' : 'text-emerald-400'} font-black text-xs text-center min-w-[85px] shadow-inner">
-                      ${activeDateFilter === 'tomorrow' ? m.matchTime : (m.isLive || m.isFinished ? m.scoreDisplay : m.matchTime)}
-                    </div>
-
-                    <div class="flex items-center gap-2.5 sm:w-2/5 justify-start text-right">
-                      <img src="${crest2}" alt="${m.team2.name}" class="w-7 h-7 object-contain" onerror="this.onerror=null; this.src='${FALLBACK_CREST}';" />
-                      <span class="text-xs font-black text-white truncate">${m.team2.name}</span>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-3 sm:w-1/5 justify-end">
-                    <span class="px-3 py-1 rounded-lg text-[11px] font-black ${m.isLive ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
-                      ${activeDateFilter === 'yesterday' ? 'انتهت 🏁' : activeDateFilter === 'tomorrow' ? 'لم تبدأ' : m.statusText}
-                    </span>
-                  </div>
-
-                </div>
-              `;
-            }).join('')}
-          </div>
-        `)}
-
-      </section>
-    `;
-  }
-
-  function SidebarWidgets({ standings = [], activeCompCode = 'PL', isLoading = false, userVote = null }) {
-    const currentLeagueObj = COMPETITIONS[activeCompCode] || COMPETITIONS['PL'];
-
-    return `
-      <aside class="space-y-6">
-        
-        <div class="bg-[#121824] rounded-3xl p-6 border border-gray-800/80 shadow-2xl space-y-4">
-          <div class="flex items-center justify-between pb-3 border-b border-gray-800">
-            <h3 class="text-base font-black text-white flex items-center gap-2">
-              <span class="text-emerald-500">|</span>
-              <span>الدوريات الرئيسية</span>
-            </h3>
-          </div>
-
-          <div class="space-y-2">
-            ${SIDEBAR_LEAGUES.map(l => `
-              <div data-comp-btn="${l.code}" class="p-3 rounded-2xl bg-[#161e2e] border border-gray-800/80 flex items-center justify-between hover:border-emerald-500/40 cursor-pointer transition-all ${activeCompCode === l.code ? 'border-emerald-500/60 bg-emerald-500/10' : ''}">
-                <div class="flex items-center gap-3">
-                  <span class="text-base">${l.flag}</span>
-                  <span class="text-xs font-black text-white">${l.name}</span>
-                </div>
-                <span class="text-gray-400 text-xs">‹</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-
-        <div class="bg-[#121824] rounded-3xl p-6 border border-gray-800/80 shadow-2xl space-y-4">
-          <div class="flex items-center justify-between pb-3 border-b border-gray-800">
-            <h3 class="text-base font-black text-white flex items-center gap-2">
-              <span class="text-emerald-500">|</span>
-              <span>ترتيب الفرق (الموسم الحالي)</span>
-            </h3>
-            <span class="text-[11px] text-emerald-400 font-extrabold">${currentLeagueObj.name}</span>
-          </div>
-
-          <div class="space-y-2 pt-1">
-            ${isLoading ? `
-              <div class="text-center py-6 text-gray-400 text-xs font-bold">جاري تحميل جدول الترتيب...</div>
-            ` : (standings.length === 0 ? `
-              <div class="text-center py-6 text-gray-400 text-xs font-bold">لا تتوفر بيانات ترتيب حالياً</div>
-            ` : `
-              ${standings.map(s => {
-                const teamLogo = s.team?.crest || FALLBACK_CREST;
-                return `
-                  <div class="p-3 rounded-2xl bg-[#161e2e] border border-gray-800/80 flex items-center justify-between hover:border-emerald-500/30 transition-colors">
-                    <div class="flex items-center gap-3">
-                      <span class="w-6 text-center font-black text-xs text-gray-400">${s.position}</span>
-                      <img src="${teamLogo}" alt="${s.team?.name}" class="w-6 h-6 object-contain" onerror="this.onerror=null; this.src='${FALLBACK_CREST}';" />
-                      <span class="text-xs font-extrabold text-white truncate max-w-[110px]">${s.team?.name}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-[10px] text-gray-400">${s.playedGames}م</span>
-                      <span class="text-xs font-black text-emerald-400">${s.points}ن</span>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            `)}
-          </div>
-        </div>
-
-        <div class="bg-[#121824] rounded-3xl p-6 border border-gray-800/80 shadow-2xl space-y-4">
-          <div class="flex items-center justify-between pb-3 border-b border-gray-800">
-            <h3 class="text-base font-black text-white flex items-center gap-2">
-              <span class="text-emerald-500">|</span>
-              <span>استطلاع الجماهير</span>
-            </h3>
-            <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-400 rounded">تصويت تصاعدي 📊</span>
-          </div>
-
-          <p class="text-xs font-extrabold text-white leading-relaxed">
-            من تتوقع أن ينتزع لقب دوري أبطال أوروبا هذا الموسم؟
-          </p>
-
-          <div class="space-y-2.5">
-            <button data-poll-option="real" class="w-full p-3 rounded-2xl bg-[#161e2e] border border-gray-800 hover:border-emerald-500/40 text-right flex items-center justify-between transition-all ${userVote === 'real' ? 'border-emerald-500 bg-emerald-500/10' : ''}">
-              <span class="text-xs font-bold text-white">ريال مدريد 👑</span>
-              <span class="text-xs font-black text-emerald-400">45%</span>
-            </button>
-            
-            <button data-poll-option="mancity" class="w-full p-3 rounded-2xl bg-[#161e2e] border border-gray-800 hover:border-emerald-500/40 text-right flex items-center justify-between transition-all ${userVote === 'mancity' ? 'border-emerald-500 bg-emerald-500/10' : ''}">
-              <span class="text-xs font-bold text-white">مانشستر سيتي 🩵</span>
-              <span class="text-xs font-black text-emerald-400">35%</span>
-            </button>
-
-            <button data-poll-option="barca" class="w-full p-3 rounded-2xl bg-[#161e2e] border border-gray-800 hover:border-emerald-500/40 text-right flex items-center justify-between transition-all ${userVote === 'barca' ? 'border-emerald-500 bg-emerald-500/10' : ''}">
-              <span class="text-xs font-bold text-white">برشلونة 🔵🔴</span>
-              <span class="text-xs font-black text-emerald-400">20%</span>
-            </button>
-          </div>
-
-          ${userVote ? `
-            <p class="text-[11px] text-center text-emerald-400 font-bold">تم تسجيل صوتك بنجاح! شكراً لمشاركتك.</p>
-          ` : ''}
-        </div>
-
-      </aside>
-    `;
-  }
-
-  function BottomGridSection({ newsList = [] }) {
-    return `
-      <section class="my-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="bg-[#121824] rounded-3xl p-6 border border-gray-800/80 shadow-2xl space-y-4">
-          <div class="flex items-center justify-between pb-3 border-b border-gray-800">
-            <h3 class="text-base font-black text-white flex items-center gap-2">
-              <span class="text-emerald-500">|</span>
-              <span>فيديوهات مميزة</span>
-            </h3>
-            <a href="#" class="text-xs text-emerald-400 font-bold hover:underline">عرض الكل ›</a>
-          </div>
-
-          <div class="relative rounded-2xl overflow-hidden border border-gray-800 group">
-            <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80" alt="فيديو" class="w-full h-48 object-cover group-hover:scale-105 transition-transform" onerror="this.onerror=null; this.src='${FALLBACK_CREST}';" />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-center justify-center">
-              <span class="w-12 h-12 rounded-full bg-emerald-500/90 text-gray-950 flex items-center justify-center text-xl font-black shadow-lg">▶</span>
-            </div>
-            <div class="absolute bottom-3 right-3 left-3 text-right">
-              <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500 text-gray-950 rounded">05:20</span>
-              <h4 class="text-xs font-extrabold text-white mt-1">ملخص وأهداف الجولة الحاسمة في البطولات الأوروبية</h4>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-[#121824] rounded-3xl p-6 border border-gray-800/80 shadow-2xl space-y-4">
-          <div class="flex items-center justify-between pb-3 border-b border-gray-800">
-            <h3 class="text-base font-black text-white flex items-center gap-2">
-              <span class="text-emerald-500">|</span>
-              <span>آخر الأخبار</span>
-            </h3>
-            <a href="#" class="text-xs text-emerald-400 font-bold hover:underline">عرض الكل ›</a>
-          </div>
-
-          <div class="space-y-3">
-            ${EDITORIAL_ARTICLES.map(a => `
-              <article class="p-3.5 rounded-2xl bg-[#161e2e] border border-gray-800/80 flex items-center gap-4 hover:border-emerald-500/40 transition-colors">
-                <img src="${a.image}" alt="${a.title}" class="w-16 h-16 object-cover rounded-xl shrink-0" onerror="this.onerror=null; this.src='${FALLBACK_CREST}';" />
-                <div class="space-y-1">
-                  <span class="text-[10px] font-bold text-emerald-400">${a.category}</span>
-                  <h4 class="text-xs font-extrabold text-white leading-snug">
-                    <a href="${a.url}" class="hover:text-emerald-400 transition-colors">${a.title}</a>
-                  </h4>
-                </div>
-              </article>
-            `).join('')}
-          </div>
-        </div>
-      </section>
-    `;
-  }
-
-  function Footer() {
-    return `
-      <footer class="bg-[#0c101a] border-t border-gray-800/80 text-gray-400 text-xs mt-16 py-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-gray-800/80">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-400 p-0.5">
-                <div class="w-full h-full bg-gray-950 rounded-[10px] flex items-center justify-center font-black text-emerald-400">SZ</div>
-              </div>
-              <div>
-                <span class="text-lg font-black text-white">SPORT ZONE</span>
-                <p class="text-[11px] text-gray-400 font-medium">المنصة الرياضية الإخبارية الأولى • ${OFFICIAL_DOMAIN}</p>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-4 sm:gap-6 text-sm font-bold">
-              <a href="./privacy.html" class="hover:text-emerald-400 transition-colors">سياسة الخصوصية</a>
-              <span class="text-gray-700">|</span>
-              <a href="./terms.html" class="hover:text-emerald-400 transition-colors">الشروط والأحكام</a>
-              <span class="text-gray-700">|</span>
-              <a href="./about.html" class="hover:text-emerald-400 transition-colors">من نحن</a>
-              <span class="text-gray-700">|</span>
-              <a href="./contact.html" class="hover:text-emerald-400 transition-colors">اتصل بنا</a>
-            </div>
-          </div>
-
-          <div class="flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-400 gap-3">
-            <p>© 2026 <strong>SPORT ZONE</strong> (<span class="text-emerald-400">${OFFICIAL_DOMAIN}</span>). جميع الحقوق محفوظة.</p>
-            <p class="text-gray-400">امتثال كامل لمعايير Google AdSense و GDPR و CCPA • البريد الرسمي: ${CONTACT_EMAIL}</p>
-          </div>
-        </div>
-      </footer>
-    `;
-  }
-
-  /* =========================================================
-     APPLICATION CONTROLLER WITH LIVE TICKER AUTO-REFRESH
-     ========================================================= */
-
-  class AppController {
-    constructor() {
-      this.state = {
-        activeCompCode: "PL",
-        selectedDateFilter: "today",
-        isLoadingMatches: true,
-        isLoadingStandings: true,
-        userVote: localStorage.getItem(POLL_STORAGE_KEY)
-      };
-
-      this.dataCache = {
-        matches: [],
-        standings: []
-      };
-
-      this.tickerTimer = null;
-      this.init();
-    }
-
-    async init() {
-      this.render();
-
-      await this.loadData();
-
-      fetchNewsTicker();
-
-      // AUTO REFRESH TICKER EVERY 60 SECONDS
-      if (!this.tickerTimer) {
-        this.tickerTimer = setInterval(() => {
-          fetchNewsTicker();
-        }, 60000);
-      }
-    }
-
-    async loadData() {
-      this.state.isLoadingMatches = true;
-      this.state.isLoadingStandings = true;
-
-      this.render();
-
-      const league = this.state.activeCompCode;
-
-      try {
-        const results = await Promise.allSettled([
-          NativeSportsApiService.fetchMatches(league),
-          NativeSportsApiService.fetchStandings(league)
-        ]);
-
-        if (results[0]?.status === "fulfilled") {
-          this.dataCache.matches = Array.isArray(results[0].value)
-            ? results[0].value
-            : [];
-        } else {
-          this.dataCache.matches = [];
-        }
-
-        if (results[1]?.status === "fulfilled") {
-          this.dataCache.standings = Array.isArray(results[1].value)
-            ? results[1].value
-            : [];
-        } else {
-          this.dataCache.standings = NATIVE_STANDINGS_MAP[league] || [];
-        }
-      } catch (error) {
-        this.dataCache.matches = [];
-        this.dataCache.standings = NATIVE_STANDINGS_MAP[league] || [];
-      }
-
-      this.state.isLoadingMatches = false;
-      this.state.isLoadingStandings = false;
-
-      this.render();
-    }
-
-    filterMatchesByDate(dateFilter) {
-      const { todayStr, yesterdayStr, tomorrowStr } = getStrictDateStrings();
-
-      const matches = Array.isArray(this.dataCache.matches)
-        ? this.dataCache.matches
-        : [];
-
-      if (dateFilter === "yesterday") {
-        return matches.filter(match => {
-          return match.matchDate === yesterdayStr || match.isFinished === true;
-        });
-      }
-
-      if (dateFilter === "tomorrow") {
-        return matches.filter(match => {
-          return (
-            match.matchDate === tomorrowStr &&
-            match.isFinished !== true &&
-            match.isLive !== true
-          );
-        });
-      }
-
-      return matches.filter(match => {
-        return (
-          match.matchDate === todayStr ||
-          (!match.matchDate && match.dayCategory === "today") ||
-          match.isLive === true
-        );
-      });
-    }
-
-    async switchLeague(code) {
-      if (!code || !COMPETITIONS[code]) return;
-      if (this.state.activeCompCode === code) return;
-
-      this.state.activeCompCode = code;
-      this.dataCache.matches = [];
-      this.dataCache.standings = [];
-
-      await this.loadData();
-    }
-
-    switchDateTab(dateFilter) {
-      const allowed = ["yesterday", "today", "tomorrow"];
-      if (!allowed.includes(dateFilter)) return;
-
-      this.state.selectedDateFilter = dateFilter;
-      this.render();
-    }
-
-    handlePollVote(option) {
-      if (!option) return;
-
-      this.state.userVote = option;
-
-      try {
-        localStorage.setItem(POLL_STORAGE_KEY, option);
-      } catch (error) {}
-
-      this.render();
-    }
-
-    render() {
-      const root = document.getElementById("app-root");
-
-      if (!root) {
-        return;
-      }
-
-      const filteredMatches = this.filterMatchesByDate(
-        this.state.selectedDateFilter
+    DOM.standingsTitle =
+      document.getElementById(
+        "currentLeagueStandingsTitle"
       );
 
-      root.innerHTML = `
-        <div class="min-h-screen flex flex-col bg-[#0b0f19] text-white">
-          <div class="flex-1">
-            ${Header()}
+    DOM.trending =
+      document.getElementById(
+        "trendingNewsWidget"
+      );
 
-            <div class="bg-[#121824] border-b border-gray-800 py-2 overflow-hidden">
-              <div class="max-w-7xl mx-auto px-4 flex items-center gap-3">
-                <span class="px-2.5 py-1 bg-emerald-500 text-gray-950 text-[10px] font-black rounded-lg shrink-0">
-                  عاجل ⚡
-                </span>
+    DOM.search =
+      document.getElementById(
+        "searchInput"
+      );
 
-                <div class="ticker-wrap flex-1 overflow-hidden">
-                  <div id="newsTicker" class="ticker-content">
-                    ${lastFetchedTickerHTML || '<span class="text-xs text-gray-400">جاري تحميل أحدث الأخبار الرياضية...</span>'}
-                  </div>
-                </div>
-              </div>
-            </div>
+    DOM.searchNotice =
+      document.getElementById(
+        "searchNoticeBar"
+      );
 
-            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              ${HeroBanner()}
+    DOM.searchNoticeText =
+      document.getElementById(
+        "searchNoticeText"
+      );
 
-              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 my-8">
-                <div class="lg:col-span-8">
-                  ${MatchCenter({
-                    matches: filteredMatches,
-                    activeCompCode: this.state.activeCompCode,
-                    activeDateFilter: this.state.selectedDateFilter,
-                    isLoading: this.state.isLoadingMatches
-                  })}
-                </div>
+    DOM.resetSearch =
+      document.getElementById(
+        "resetSearchBtn"
+      );
 
-                <div class="lg:col-span-4">
-                  ${SidebarWidgets({
-                    standings: this.dataCache.standings,
-                    activeCompCode: this.state.activeCompCode,
-                    isLoading: this.state.isLoadingStandings,
-                    userVote: this.state.userVote
-                  })}
-                </div>
-              </div>
+    DOM.toast =
+      document.getElementById(
+        "szToast"
+      );
 
-              ${BottomGridSection({ newsList: [] })}
-            </main>
+    DOM.videos =
+      document.getElementById(
+        "videosContainer"
+      );
+
+  }
+
+
+  /* =======================================================
+     HELPERS
+  ======================================================= */
+
+  function escapeHTML(value) {
+
+    if (
+      value === null ||
+      value === undefined
+    ) {
+      return "";
+    }
+
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  }
+
+
+  function uid(prefix = "article") {
+
+    return (
+      prefix +
+      "-" +
+      Date.now().toString(36) +
+      "-" +
+      Math.random()
+        .toString(36)
+        .slice(2, 8)
+    );
+
+  }
+
+
+  function showToast(message) {
+
+    if (!DOM.toast) return;
+
+    DOM.toast.textContent =
+      message;
+
+    DOM.toast.classList.add(
+      "show"
+    );
+
+    clearTimeout(
+      showToast.timer
+    );
+
+    showToast.timer =
+      setTimeout(() => {
+
+        DOM.toast.classList.remove(
+          "show"
+        );
+
+      }, 2600);
+
+  }
+
+
+  function loadingHTML() {
+
+    return `
+      <div class="loading">
+        <span class="spinner"></span>
+        جاري تحميل البيانات...
+      </div>
+    `;
+
+  }
+
+
+  /* =======================================================
+     MOROCCO TIME GMT+1
+  ======================================================= */
+
+  function moroccoDate(
+    date
+  ) {
+
+    const d =
+      date instanceof Date
+        ? date
+        : new Date(date);
+
+    if (
+      Number.isNaN(
+        d.getTime()
+      )
+    ) {
+      return null;
+    }
+
+    return new Date(
+      d.toLocaleString(
+        "en-US",
+        {
+          timeZone:
+            "Africa/Casablanca"
+        }
+      )
+    );
+
+  }
+
+
+  function formatMoroccoTime(
+    value
+  ) {
+
+    const d =
+      moroccoDate(value);
+
+    if (!d) {
+      return "--:-- GMT+1";
+    }
+
+    return (
+      new Intl.DateTimeFormat(
+        "fr-MA",
+        {
+          timeZone:
+            "Africa/Casablanca",
+          hour:
+            "2-digit",
+          minute:
+            "2-digit",
+          hour12:
+            false
+        }
+      ).format(
+        new Date(value)
+      ) +
+      " GMT+1"
+    );
+
+  }
+
+
+  function formatMoroccoDate(
+    value
+  ) {
+
+    const d =
+      new Date(value);
+
+    if (
+      Number.isNaN(
+        d.getTime()
+      )
+    ) {
+      return "";
+    }
+
+    return new Intl.DateTimeFormat(
+      "ar-MA",
+      {
+        timeZone:
+          "Africa/Casablanca",
+        day:
+          "2-digit",
+        month:
+          "2-digit",
+        year:
+          "numeric",
+        hour:
+          "2-digit",
+        minute:
+          "2-digit",
+        hour12:
+          false
+      }
+    ).format(d) +
+      " GMT+1";
+
+  }
+
+
+  function dateISO(
+    offset
+  ) {
+
+    const now =
+      new Date();
+
+    const morocco =
+      new Date(
+        now.toLocaleString(
+          "en-US",
+          {
+            timeZone:
+              "Africa/Casablanca"
+          }
+        )
+      );
+
+    morocco.setDate(
+      morocco.getDate() +
+      offset
+    );
+
+    const y =
+      morocco.getFullYear();
+
+    const m =
+      String(
+        morocco.getMonth() + 1
+      ).padStart(2, "0");
+
+    const d =
+      String(
+        morocco.getDate()
+      ).padStart(2, "0");
+
+    return `${y}-${m}-${d}`;
+
+  }
+
+
+  /* =======================================================
+     API
+  ======================================================= */
+
+  async function apiFetch(
+    type,
+    league,
+    params = {}
+  ) {
+
+    if (!league) {
+      throw new Error(
+        "League is required"
+      );
+    }
+
+    const url =
+      new URL(
+        CONFIG.API_URL,
+        window.location.origin
+      );
+
+    url.searchParams.set(
+      "type",
+      type
+    );
+
+    url.searchParams.set(
+      "league",
+      league
+    );
+
+    Object.entries(
+      params
+    ).forEach(
+      ([key, value]) => {
+
+        if (
+          value !== undefined &&
+          value !== null &&
+          value !== ""
+        ) {
+
+          url.searchParams.set(
+            key,
+            value
+          );
+
+        }
+
+      }
+    );
+
+    const response =
+      await fetch(
+        url.toString(),
+        {
+          method: "GET",
+          headers: {
+            Accept:
+              "application/json"
+          },
+          cache:
+            "no-store"
+        }
+      );
+
+    if (!response.ok) {
+
+      let message =
+        `API Error ${response.status}`;
+
+      try {
+
+        const errorData =
+          await response.json();
+
+        if (
+          errorData?.details?.message
+        ) {
+
+          message =
+            errorData.details.message;
+
+        }
+
+      } catch (_) {}
+
+      throw new Error(
+        message
+      );
+
+    }
+
+    return response.json();
+
+  }
+
+
+  /* =======================================================
+     MANUAL ARTICLES
+  ======================================================= */
+
+  function getManualArticles() {
+
+    try {
+
+      const raw =
+        localStorage.getItem(
+          CONFIG.ARTICLES_STORAGE
+        );
+
+      if (!raw) {
+        return [];
+      }
+
+      const parsed =
+        JSON.parse(raw);
+
+      if (
+        !Array.isArray(parsed)
+      ) {
+        return [];
+      }
+
+      return parsed
+        .map(
+          normalizeManualArticle
+        )
+        .filter(Boolean);
+
+    } catch (error) {
+
+      console.error(
+        "Manual articles error:",
+        error
+      );
+
+      return [];
+
+    }
+
+  }
+
+
+  function normalizeManualArticle(
+    article,
+    index
+  ) {
+
+    if (!article) {
+      return null;
+    }
+
+    const title =
+      article.title ||
+      article.headline ||
+      article.name;
+
+    if (!title) {
+      return null;
+    }
+
+    return {
+
+      id:
+        String(
+          article.id ||
+          article._id ||
+          uid("manual")
+        ),
+
+      title:
+        String(title),
+
+      summary:
+        String(
+          article.summary ||
+          article.description ||
+          article.excerpt ||
+          ""
+        ),
+
+      content:
+        String(
+          article.content ||
+          article.body ||
+          article.text ||
+          article.summary ||
+          ""
+        ),
+
+      image:
+        article.image ||
+        article.imageUrl ||
+        article.thumbnail ||
+        fallbackImage(index),
+
+      category:
+        article.category ||
+        article.league ||
+        "رياضة",
+
+      league:
+        normalizeLeague(
+          article.league
+        ),
+
+      source:
+        article.source ||
+        "SPORT ZONE",
+
+      publishedAt:
+        article.publishedAt ||
+        article.date ||
+        new Date().toISOString(),
+
+      manual:
+        true
+
+    };
+
+  }
+
+
+  /* =======================================================
+     FALLBACK IMAGES
+  ======================================================= */
+
+  const FALLBACK_IMAGES = [
+
+    "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80",
+
+    "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80",
+
+    "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1200&q=80",
+
+    "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80"
+
+  ];
+
+
+  function fallbackImage(
+    index = 0
+  ) {
+
+    return FALLBACK_IMAGES[
+      index %
+      FALLBACK_IMAGES.length
+    ];
+
+  }
+
+
+  /* =======================================================
+     RSS
+  ======================================================= */
+
+  function proxyURLs(
+    rssURL
+  ) {
+
+    return [
+
+      "https://api.allorigins.win/raw?url=" +
+      encodeURIComponent(rssURL),
+
+      "https://corsproxy.io/?" +
+      encodeURIComponent(rssURL)
+
+    ];
+
+  }
+
+
+  async function fetchWithTimeout(
+    url,
+    timeout =
+      CONFIG.RSS_TIMEOUT
+  ) {
+
+    const controller =
+      new AbortController();
+
+    const timer =
+      setTimeout(
+        () => controller.abort(),
+        timeout
+      );
+
+    try {
+
+      const response =
+        await fetch(
+          url,
+          {
+            signal:
+              controller.signal,
+            cache:
+              "no-store"
+          }
+        );
+
+      return response;
+
+    } finally {
+
+      clearTimeout(timer);
+
+    }
+
+  }
+
+
+  async function fetchRSS(
+    source
+  ) {
+
+    const proxies =
+      proxyURLs(
+        source.url
+      );
+
+    for (
+      const proxy of proxies
+    ) {
+
+      try {
+
+        const response =
+          await fetchWithTimeout(
+            proxy
+          );
+
+        if (
+          !response.ok
+        ) {
+          continue;
+        }
+
+        const text =
+          await response.text();
+
+        if (!text) {
+          continue;
+        }
+
+        return parseRSS(
+          text,
+          source.name
+        );
+
+      } catch (error) {
+
+        console.warn(
+          "RSS proxy failed:",
+          proxy,
+          error
+        );
+
+      }
+
+    }
+
+    return [];
+
+  }
+
+
+  function parseRSS(
+    text,
+    sourceName
+  ) {
+
+    try {
+
+      const parser =
+        new DOMParser();
+
+      const xml =
+        parser.parseFromString(
+          text,
+          "text/xml"
+        );
+
+      const items =
+        [
+          ...xml.querySelectorAll(
+            "item"
+          )
+        ];
+
+      return items
+        .map(
+          (item, index) => {
+
+            const title =
+              item.querySelector(
+                "title"
+              )?.textContent?.trim();
+
+            const description =
+              item.querySelector(
+                "description"
+              )?.textContent?.trim() ||
+              "";
+
+            const link =
+              item.querySelector(
+                "link"
+              )?.textContent?.trim();
+
+            const pubDate =
+              item.querySelector(
+                "pubDate"
+              )?.textContent?.trim();
+
+            if (!title) {
+              return null;
+            }
+
+            return {
+
+              id:
+                "rss-" +
+                hashString(
+                  title +
+                  (
+                    link ||
+                    ""
+                  )
+                ),
+
+              title:
+                cleanText(title),
+
+              summary:
+                cleanText(
+                  stripHTML(
+                    description
+                  )
+                ),
+
+              content:
+                cleanText(
+                  stripHTML(
+                    description
+                  )
+                ),
+
+              image:
+                fallbackImage(
+                  index
+                ),
+
+              category:
+                detectCategory(
+                  title
+                ),
+
+              league:
+                detectLeague(
+                  title
+                ),
+
+              source:
+                sourceName,
+
+              sourceUrl:
+                link || "",
+
+              publishedAt:
+                pubDate ||
+                new Date().toISOString(),
+
+              manual:
+                false
+
+            };
+
+          }
+        )
+        .filter(Boolean);
+
+    } catch (error) {
+
+      console.error(
+        "RSS parsing failed:",
+        error
+      );
+
+      return [];
+
+    }
+
+  }
+
+
+  function cleanText(
+    text
+  ) {
+
+    return String(
+      text || ""
+    )
+      .replace(
+        /<!\[CDATA\[|\]\]>/g,
+        ""
+      )
+      .replace(
+        /\s+/g,
+        " "
+      )
+      .trim();
+
+  }
+
+
+  function stripHTML(
+    html
+  ) {
+
+    const div =
+      document.createElement(
+        "div"
+      );
+
+    div.innerHTML =
+      html || "";
+
+    return div.textContent ||
+      div.innerText ||
+      "";
+
+  }
+
+
+  function hashString(
+    value
+  ) {
+
+    let hash =
+      0;
+
+    for (
+      let i = 0;
+      i < value.length;
+      i++
+    ) {
+
+      hash =
+        (
+          (
+            hash << 5
+          ) -
+          hash
+        ) +
+        value.charCodeAt(i);
+
+      hash |=
+        0;
+
+    }
+
+    return Math.abs(
+      hash
+    ).toString(36);
+
+  }
+
+
+  /* =======================================================
+     LEAGUE DETECTION
+  ======================================================= */
+
+  function normalizeLeague(
+    value
+  ) {
+
+    if (!value) {
+      return "all";
+    }
+
+    const v =
+      String(value)
+        .toLowerCase();
+
+    if (
+      v.includes("botola") ||
+      v.includes("البطولة") ||
+      v.includes("المغرب")
+    ) {
+      return "botola";
+    }
+
+    if (
+      v === "pl" ||
+      v.includes("premier") ||
+      v.includes("إنجليزي")
+    ) {
+      return "PL";
+    }
+
+    if (
+      v === "pd" ||
+      v.includes("liga") ||
+      v.includes("إسباني")
+    ) {
+      return "PD";
+    }
+
+    if (
+      v === "sa" ||
+      v.includes("serie") ||
+      v.includes("إيطالي")
+    ) {
+      return "SA";
+    }
+
+    if (
+      v === "bl1" ||
+      v.includes("bundes") ||
+      v.includes("ألماني")
+    ) {
+      return "BL1";
+    }
+
+    if (
+      v === "fl1" ||
+      v.includes("ligue") ||
+      v.includes("فرنسي")
+    ) {
+      return "FL1";
+    }
+
+    if (
+      v === "cl" ||
+      v.includes("champions") ||
+      v.includes("أبطال أوروبا")
+    ) {
+      return "CL";
+    }
+
+    return "all";
+
+  }
+
+
+  function detectLeague(
+    title
+  ) {
+
+    return normalizeLeague(
+      title
+    );
+
+  }
+
+
+  function detectCategory(
+    title
+  ) {
+
+    const league =
+      detectLeague(
+        title
+      );
+
+    return (
+      LEAGUES[league]?.name ||
+      "كرة القدم"
+    );
+
+  }
+
+
+  /* =======================================================
+     LOAD NEWS
+  ======================================================= */
+
+  async function loadNews() {
+
+    const manual =
+      getManualArticles();
+
+    let rssArticles = [];
+
+    try {
+
+      const results =
+        await Promise.allSettled(
+          RSS_SOURCES.map(
+            fetchRSS
+          )
+        );
+
+      results.forEach(
+        result => {
+
+          if (
+            result.status === "fulfilled"
+          ) {
+
+            rssArticles.push(
+              ...result.value
+            );
+
+          }
+
+        }
+      );
+
+    } catch (error) {
+
+      console.error(
+        "News loading error:",
+        error
+      );
+
+    }
+
+
+    /*
+      إزالة التكرار
+    */
+
+    const unique =
+      new Map();
+
+    [
+      ...manual,
+      ...rssArticles
+    ].forEach(
+      article => {
+
+        const key =
+          article.id ||
+          hashString(
+            article.title
+          );
+
+        if (
+          !unique.has(key)
+        ) {
+
+          unique.set(
+            key,
+            article
+          );
+
+        }
+
+      }
+    );
+
+
+    let articles =
+      [...unique.values()];
+
+
+    /*
+      Manual articles دائما الأولوية
+    */
+
+    articles.sort(
+      (a, b) => {
+
+        if (
+          a.manual &&
+          !b.manual
+        ) {
+          return -1;
+        }
+
+        if (
+          !a.manual &&
+          b.manual
+        ) {
+          return 1;
+        }
+
+        return (
+          new Date(
+            b.publishedAt
+          ) -
+          new Date(
+            a.publishedAt
+          )
+        );
+
+      }
+    );
+
+
+    state.articles =
+      articles.slice(
+        0,
+        CONFIG.MAX_NEWS
+      );
+
+
+    renderNews();
+
+  }
+
+
+  /* =======================================================
+     FILTER NEWS
+  ======================================================= */
+
+  function getFilteredArticles() {
+
+    let articles =
+      [...state.articles];
+
+
+    if (
+      state.league !== "all"
+    ) {
+
+      articles =
+        articles.filter(
+          article => {
+
+            return (
+              article.league ===
+              state.league ||
+              article.manual === true &&
+              (
+                article.league ===
+                state.league
+              )
+            );
+
+          }
+        );
+
+    }
+
+
+    if (
+      state.search.trim()
+    ) {
+
+      const query =
+        state.search
+          .toLowerCase()
+          .trim();
+
+      articles =
+        articles.filter(
+          article => {
+
+            const text =
+              [
+                article.title,
+                article.summary,
+                article.content,
+                article.category,
+                article.source
+              ]
+              .join(" ")
+              .toLowerCase();
+
+            return text.includes(
+              query
+            );
+
+          }
+        );
+
+    }
+
+    return articles;
+
+  }
+
+
+  /* =======================================================
+     RENDER NEWS
+  ======================================================= */
+
+  function renderNews() {
+
+    const articles =
+      getFilteredArticles();
+
+
+    if (
+      state.search.trim()
+    ) {
+
+      DOM.searchNotice.classList.remove(
+        "hidden"
+      );
+
+      DOM.searchNoticeText.textContent =
+        `نتائج البحث عن "${state.search}" — ${articles.length} خبر`;
+
+    } else {
+
+      DOM.searchNotice.classList.add(
+        "hidden"
+      );
+
+    }
+
+
+    if (!articles.length) {
+
+      DOM.hero.innerHTML =
+        emptyNewsHTML();
+
+      DOM.news.innerHTML =
+        "";
+
+      return;
+
+    }
+
+
+    const hero =
+      articles[0];
+
+    DOM.hero.innerHTML =
+      heroHTML(
+        hero
+      );
+
+
+    DOM.news.innerHTML =
+      articles
+        .slice(1)
+        .map(
+          articleHTML
+        )
+        .join("");
+
+
+    renderTrending(
+      articles
+    );
+
+  }
+
+
+  function heroHTML(
+    article
+  ) {
+
+    return `
+
+      <article
+        class="hero-card"
+        data-article-id="${escapeHTML(article.id)}">
+
+        <img
+          class="hero-image"
+          src="${escapeHTML(article.image)}"
+          alt="${escapeHTML(article.title)}"
+          loading="eager"
+          onerror="this.src='${fallbackImage(0)}'">
+
+        <div class="hero-overlay"></div>
+
+        <div class="hero-content">
+
+          <span class="article-category">
+            ${escapeHTML(article.category)}
+          </span>
+
+          <h1>
+            ${escapeHTML(article.title)}
+          </h1>
+
+          <div class="article-meta">
+
+            <span>
+              📰 ${escapeHTML(article.source)}
+            </span>
+
+            <span>
+              🕐 ${formatMoroccoDate(article.publishedAt)}
+            </span>
+
+            <span>
+              اقرأ الخبر كاملاً ←
+            </span>
+
           </div>
 
-          ${Footer()}
         </div>
+
+      </article>
+
+    `;
+
+  }
+
+
+  function articleHTML(
+    article
+  ) {
+
+    return `
+
+      <article
+        class="news-card"
+        data-article-id="${escapeHTML(article.id)}">
+
+        <div class="news-image-wrapper">
+
+          <img
+            class="news-image"
+            src="${escapeHTML(article.image)}"
+            alt="${escapeHTML(article.title)}"
+            loading="lazy"
+            onerror="this.src='${fallbackImage(1)}'">
+
+        </div>
+
+        <div class="news-body">
+
+          <span class="article-category">
+            ${escapeHTML(article.category)}
+          </span>
+
+          <h2>
+            ${escapeHTML(article.title)}
+          </h2>
+
+          <div class="news-summary">
+            ${escapeHTML(
+              article.summary ||
+              "آخر الأخبار الرياضية والتفاصيل الكاملة."
+            )}
+          </div>
+
+          <div class="news-meta">
+
+            <span>
+              ${escapeHTML(article.source)}
+            </span>
+
+            <span>
+              ${formatMoroccoDate(
+                article.publishedAt
+              )}
+            </span>
+
+          </div>
+
+        </div>
+
+      </article>
+
+    `;
+
+  }
+
+
+  function emptyNewsHTML() {
+
+    return `
+
+      <div class="panel">
+
+        <div class="no-data">
+
+          لا توجد أخبار مطابقة للبحث أو الدوري المحدد حالياً.
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  /* =======================================================
+     ARTICLE ROUTING
+  ======================================================= */
+
+  function openArticle(
+    articleId,
+    updateURL = true
+  ) {
+
+    const article =
+      state.articles.find(
+        item =>
+          String(item.id) ===
+          String(articleId)
+      );
+
+    if (!article) {
+
+      showToast(
+        "عذراً، الخبر غير موجود"
+      );
+
+      return;
+
+    }
+
+
+    state.articleView =
+      true;
+
+
+    if (updateURL) {
+
+      history.pushState(
+        {
+          articleId:
+            article.id
+        },
+        "",
+        `#article-${encodeURIComponent(
+          article.id
+        )}`
+      );
+
+    }
+
+
+    renderSingleArticle(
+      article
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+
+
+  function renderSingleArticle(
+    article
+  ) {
+
+    DOM.home.style.display =
+      "none";
+
+    DOM.article.style.display =
+      "block";
+
+
+    const canonicalURL =
+      window.location.href;
+
+
+    const encodedTitle =
+      encodeURIComponent(
+        article.title
+      );
+
+    const encodedURL =
+      encodeURIComponent(
+        canonicalURL
+      );
+
+
+    DOM.article.innerHTML = `
+
+      <div class="article-reader">
+
+        <button
+          class="article-back"
+          id="articleBackBtn">
+          → العودة إلى الأخبار
+        </button>
+
+        <div class="article-reader-category">
+          ${escapeHTML(article.category)}
+        </div>
+
+        <h1>
+          ${escapeHTML(article.title)}
+        </h1>
+
+        <div class="article-reader-meta">
+
+          <span>
+            📰 ${escapeHTML(article.source)}
+          </span>
+
+          <span>
+            🕐 ${formatMoroccoDate(
+              article.publishedAt
+            )}
+          </span>
+
+        </div>
+
+        <img
+          class="article-cover"
+          src="${escapeHTML(article.image)}"
+          alt="${escapeHTML(article.title)}"
+          onerror="this.src='${fallbackImage(0)}'">
+
+        <div class="share-bar">
+
+          <span class="share-label">
+            شارك الخبر:
+          </span>
+
+          <button
+            class="share-btn whatsapp"
+            data-share="whatsapp"
+            data-url="${encodedURL}"
+            data-title="${encodedTitle}">
+            🟢 WhatsApp
+          </button>
+
+          <button
+            class="share-btn facebook"
+            data-share="facebook"
+            data-url="${encodedURL}">
+            🔵 Facebook
+          </button>
+
+          <button
+            class="share-btn twitter"
+            data-share="twitter"
+            data-url="${encodedURL}"
+            data-title="${encodedTitle}">
+            ⚫ X
+          </button>
+
+          <button
+            class="share-btn copy-link"
+            data-share="copy">
+            📋 نسخ الرابط
+          </button>
+
+        </div>
+
+        <div class="article-content">
+
+          ${
+            article.summary
+              ? `
+                <div class="article-summary">
+                  ${escapeHTML(article.summary)}
+                </div>
+              `
+              : ""
+          }
+
+          ${formatArticleContent(
+            article.content ||
+            article.summary ||
+            ""
+          )}
+
+          ${
+            article.sourceUrl
+              ? `
+                <p style="font-size:11px;color:#718091;margin-top:25px;">
+                  المصدر:
+                  ${escapeHTML(article.source)}
+                </p>
+              `
+              : ""
+          }
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  function formatArticleContent(
+    text
+  ) {
+
+    const cleaned =
+      stripHTML(
+        text
+      )
+      .trim();
+
+    if (!cleaned) {
+
+      return `
+        <p>
+          لم يتم توفير النص الكامل لهذا الخبر.
+        </p>
       `;
 
-      // RESTORE TICKER ANIMATION
-      const tickerEl = document.getElementById("newsTicker");
-      if (tickerEl && lastFetchedTickerHTML) {
-        startTickerAnimation(tickerEl);
-      }
-
-      this.bindEvents();
     }
 
-    bindEvents() {
-      const manualBtn = document.getElementById("btn-manual-refresh");
+    const paragraphs =
+      cleaned
+        .split(
+          /\n{2,}|(?<=[.!؟])\s{2,}/
+        )
+        .filter(Boolean);
 
-      if (manualBtn) {
-        manualBtn.onclick = () => {
-          this.loadData();
-          fetchNewsTicker();
-        };
-      }
+    return paragraphs
+      .map(
+        paragraph =>
+          `<p>${escapeHTML(
+            paragraph.trim()
+          )}</p>`
+      )
+      .join("");
 
-      document
-        .querySelectorAll("[data-comp-btn]")
-        .forEach(button => {
-          if (!button) return;
-
-          button.onclick = event => {
-            const code = event.currentTarget?.getAttribute("data-comp-btn");
-            if (code) this.switchLeague(code);
-          };
-        });
-
-      document
-        .querySelectorAll("[data-date-tab]")
-        .forEach(button => {
-          if (!button) return;
-
-          button.onclick = event => {
-            const tab = event.currentTarget?.getAttribute("data-date-tab");
-            if (tab) this.switchDateTab(tab);
-          };
-        });
-
-      document
-        .querySelectorAll("[data-poll-option]")
-        .forEach(button => {
-          if (!button) return;
-
-          button.onclick = event => {
-            const option = event.currentTarget?.getAttribute("data-poll-option");
-            if (option) this.handlePollVote(option);
-          };
-        });
-    }
   }
 
-  /* =========================================================
-     START APPLICATION
-     ========================================================= */
 
-  function startApp() {
+  function closeArticle(
+    updateURL = true
+  ) {
+
+    state.articleView =
+      false;
+
+    DOM.article.style.display =
+      "none";
+
+    DOM.home.style.display =
+      "block";
+
+
+    if (updateURL) {
+
+      history.pushState(
+        {},
+        "",
+        window.location.pathname +
+        window.location.search
+      );
+
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+
+
+  function handleHashRoute() {
+
+    const hash =
+      window.location.hash;
+
+
+    if (
+      hash.startsWith(
+        "#article-"
+      )
+    ) {
+
+      const id =
+        decodeURIComponent(
+          hash.substring(
+            "#article-".length
+          )
+        );
+
+      /*
+        المقالات RSS/manual يتم تحميلها
+        قبل محاولة فتح route
+      */
+
+      const article =
+        state.articles.find(
+          item =>
+            String(item.id) ===
+            String(id)
+        );
+
+      if (article) {
+
+        openArticle(
+          article.id,
+          false
+        );
+
+      } else {
+
+        /*
+          إذا البيانات مازال ما كملتش
+          نخليها تتعاود بعد التحميل
+        */
+
+        setTimeout(
+          () =>
+            handleHashRoute(),
+          500
+        );
+
+      }
+
+    } else {
+
+      if (
+        state.articleView
+      ) {
+
+        closeArticle(
+          false
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /* =======================================================
+     SHARE
+  ======================================================= */
+
+  function shareArticle(
+    type,
+    article
+  ) {
+
+    const url =
+      window.location.href;
+
+    const title =
+      article.title;
+
+
+    if (
+      type === "whatsapp"
+    ) {
+
+      const target =
+        "https://api.whatsapp.com/send?text=" +
+        encodeURIComponent(
+          title
+        ) +
+        "%20" +
+        encodeURIComponent(
+          url
+        );
+
+      window.open(
+        target,
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      type === "facebook"
+    ) {
+
+      const target =
+        "https://www.facebook.com/sharer/sharer.php?u=" +
+        encodeURIComponent(
+          url
+        );
+
+      window.open(
+        target,
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      type === "twitter"
+    ) {
+
+      const target =
+        "https://twitter.com/intent/tweet?text=" +
+        encodeURIComponent(
+          title
+        ) +
+        "&url=" +
+        encodeURIComponent(
+          url
+        );
+
+      window.open(
+        target,
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      type === "copy"
+    ) {
+
+      copyCurrentURL();
+
+    }
+
+  }
+
+
+  async function copyCurrentURL() {
+
+    const url =
+      window.location.href;
+
+
     try {
-      new AppController();
+
+      if (
+        navigator.clipboard &&
+        window.isSecureContext
+      ) {
+
+        await navigator.clipboard.writeText(
+          url
+        );
+
+      } else {
+
+        const textarea =
+          document.createElement(
+            "textarea"
+          );
+
+        textarea.value =
+          url;
+
+        textarea.style.position =
+          "fixed";
+
+        textarea.style.opacity =
+          "0";
+
+        document.body.appendChild(
+          textarea
+        );
+
+        textarea.focus();
+        textarea.select();
+
+        document.execCommand(
+          "copy"
+        );
+
+        textarea.remove();
+
+      }
+
+      showToast(
+        "تم نسخ الرابط بنجاح"
+      );
+
     } catch (error) {
-      console.error("SPORT ZONE failed to start:", error);
+
+      showToast(
+        "تعذر نسخ الرابط"
+      );
+
     }
+
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", startApp, { once: true });
-  } else {
-    startApp();
+
+  /* =======================================================
+     MATCHES
+  ======================================================= */
+
+  async function loadMatches() {
+
+    DOM.matches.innerHTML =
+      loadingHTML();
+
+    DOM.ticker.innerHTML =
+      loadingHTML();
+
+
+    /*
+      البطولة برو:
+      حاليا fallback لأن sports.js
+      ما فيه API خاص بالبطولة.
+    */
+
+    if (
+      state.league === "botola"
+    ) {
+
+      state.matches =
+        getBotolaFallbackMatches();
+
+      renderMatches();
+
+      return;
+
+    }
+
+
+    if (
+      state.league === "all"
+    ) {
+
+      /*
+        الرئيسية تجمع المباريات
+        من عدة دوريات.
+      */
+
+      const leagues =
+        [
+          "PL",
+          "PD",
+          "SA",
+          "BL1",
+          "FL1",
+          "CL"
+        ];
+
+      const date =
+        getSelectedDate();
+
+
+      const results =
+        await Promise.allSettled(
+          leagues.map(
+            league =>
+              apiFetch(
+                "matches",
+                league,
+                {
+                  date
+                }
+              )
+          )
+        );
+
+
+      const matches =
+        [];
+
+      results.forEach(
+        result => {
+
+          if (
+            result.status ===
+            "fulfilled"
+          ) {
+
+            matches.push(
+              ...(
+                result.value.matches ||
+                []
+              )
+            );
+
+          }
+
+        }
+      );
+
+
+      state.matches =
+        normalizeMatches(
+          matches
+        );
+
+      renderMatches();
+
+      return;
+
+    }
+
+
+    const leagueAPI =
+      LEAGUES[
+        state.league
+      ]?.api;
+
+
+    if (!leagueAPI) {
+
+      state.matches =
+        [];
+
+      renderMatches();
+
+      return;
+
+    }
+
+
+    try {
+
+      const data =
+        await apiFetch(
+          "matches",
+          leagueAPI,
+          {
+            date:
+              getSelectedDate()
+          }
+        );
+
+
+      state.matches =
+        normalizeMatches(
+          data.matches ||
+          []
+        );
+
+    } catch (error) {
+
+      console.error(
+        "Matches error:",
+        error
+      );
+
+      state.matches =
+        [];
+
+    }
+
+
+    renderMatches();
+
   }
+
+
+  function getSelectedDate() {
+
+    if (
+      state.date ===
+      "yesterday"
+    ) {
+      return dateISO(-1);
+    }
+
+    if (
+      state.date ===
+      "tomorrow"
+    ) {
+      return dateISO(1);
+    }
+
+    return dateISO(0);
+
+  }
+
+
+  function normalizeMatches(
+    matches
+  ) {
+
+    return matches
+      .map(
+        match => {
+
+          const home =
+            match.homeTeam ||
+            {};
+
+          const away =
+            match.awayTeam ||
+            {};
+
+          const score =
+            match.score ||
+            {};
+
+          return {
+
+            id:
+              match.id,
+
+            competition:
+              match.competition?.name ||
+              "",
+
+            competitionCode:
+              match.competition?.code ||
+              "",
+
+            home:
+              home.name ||
+              "الفريق المضيف",
+
+            away:
+              away.name ||
+              "الفريق الضيف",
+
+            homeCrest:
+              home.crest ||
+              "",
+
+            awayCrest:
+              away.crest ||
+              "",
+
+            utcDate:
+              match.utcDate,
+
+            status:
+              match.status,
+
+            homeScore:
+              score.fullTime?.home,
+
+            awayScore:
+              score.fullTime?.away,
+
+            minute:
+              match.minute ||
+              null
+
+          };
+
+        }
+      )
+      .filter(Boolean)
+      .sort(
+        (a,b) =>
+          new Date(
+            a.utcDate
+          ) -
+          new Date(
+            b.utcDate
+          )
+      );
+
+  }
+
+
+  function renderMatches() {
+
+    if (
+      !state.matches.length
+    ) {
+
+      DOM.matches.innerHTML =
+        `
+          <div class="no-data">
+            لا توجد مباريات مسجلة لهذا اليوم.
+          </div>
+        `;
+
+      DOM.ticker.innerHTML =
+        `
+          <div class="no-data">
+            لا توجد مباريات.
+          </div>
+        `;
+
+      return;
+
+    }
+
+
+    DOM.matches.innerHTML =
+      state.matches
+        .slice(0, 12)
+        .map(
+          matchWidgetHTML
+        )
+        .join("");
+
+
+    DOM.ticker.innerHTML =
+      state.matches
+        .slice(0, 15)
+        .map(
+          matchTickerHTML
+        )
+        .join("");
+
+  }
+
+
+  function matchWidgetHTML(
+    match
+  ) {
+
+    const status =
+      matchStatus(
+        match
+      );
+
+    return `
+
+      <div class="widget-match">
+
+        <div class="widget-match-top">
+
+          <span class="widget-league">
+            ${escapeHTML(
+              match.competition
+            )}
+          </span>
+
+          <span class="widget-time">
+            ${escapeHTML(
+              formatMoroccoTime(
+                match.utcDate
+              )
+            )}
+          </span>
+
+        </div>
+
+        <div class="widget-teams">
+
+          <span class="widget-team">
+            ${escapeHTML(
+              match.home
+            )}
+          </span>
+
+          <strong class="widget-score">
+            ${
+              match.homeScore !== undefined &&
+              match.homeScore !== null
+                ? `${match.homeScore} - ${match.awayScore}`
+                : "VS"
+            }
+          </strong>
+
+          <span class="widget-team">
+            ${escapeHTML(
+              match.away
+            )}
+          </span>
+
+        </div>
+
+        <div class="${status.className}"
+             style="text-align:center;margin-top:6px;font-size:9px;font-weight:900;">
+          ${status.text}
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  function matchTickerHTML(
+    match
+  ) {
+
+    const status =
+      matchStatus(
+        match
+      );
+
+    return `
+
+      <div class="ticker-card">
+
+        <div class="ticker-league">
+          ${escapeHTML(
+            match.competition
+          )}
+        </div>
+
+        <div class="ticker-teams">
+
+          <span>
+            ${escapeHTML(
+              match.home
+            )}
+          </span>
+
+          <strong class="ticker-score">
+            ${
+              match.homeScore !== undefined &&
+              match.homeScore !== null
+                ? `${match.homeScore}-${match.awayScore}`
+                : formatMoroccoTime(
+                    match.utcDate
+                  ).replace(
+                    " GMT+1",
+                    ""
+                  )
+            }
+          </strong>
+
+          <span>
+            ${escapeHTML(
+              match.away
+            )}
+          </span>
+
+        </div>
+
+        <div class="match-status ${status.className}">
+          ${status.text}
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  function matchStatus(
+    match
+  ) {
+
+    const status =
+      String(
+        match.status ||
+        ""
+      ).toUpperCase();
+
+
+    if (
+      [
+        "IN_PLAY",
+        "PAUSED",
+        "LIVE"
+      ].includes(status)
+    ) {
+
+      return {
+
+        text:
+          "🔴 مباشر",
+
+        className:
+          "status-live"
+
+      };
+
+    }
+
+
+    if (
+      [
+        "FINISHED",
+        "AWARDED"
+      ].includes(status)
+    ) {
+
+      return {
+
+        text:
+          "✓ انتهت",
+
+        className:
+          "status-finished"
+
+      };
+
+    }
+
+
+    if (
+      status ===
+      "POSTPONED"
+    ) {
+
+      return {
+
+        text:
+          "تأجلت",
+
+        className:
+          "status-live"
+
+      };
+
+    }
+
+
+    return {
+
+      text:
+        "⏱ لم تبدأ",
+
+      className:
+        "match-status"
+
+    };
+
+  }
+
+
+  /* =======================================================
+     BOTOLA FALLBACK
+  ======================================================= */
+
+  function getBotolaFallbackMatches() {
+
+    /*
+      لا ندعي أنها مباريات اليوم.
+      هذه بيانات fallback فقط عند تعذر
+      وجود API للبطولة.
+    */
+
+    return [];
+
+  }
+
+
+  /* =======================================================
+     STANDINGS
+  ======================================================= */
+
+  async function loadStandings() {
+
+    DOM.standings.innerHTML =
+      loadingHTML();
+
+
+    if (
+      state.league ===
+      "all"
+    ) {
+
+      DOM.standingsTitle.textContent =
+        "اختر دوري";
+
+      DOM.standings.innerHTML =
+        `
+          <div class="no-data">
+            اختر أحد الدوريات لعرض جدول الترتيب.
+          </div>
+        `;
+
+      return;
+
+    }
+
+
+    if (
+      state.league ===
+      "botola"
+    ) {
+
+      DOM.standingsTitle.textContent =
+        "البطولة برو";
+
+      renderStandings(
+        getBotolaFallbackStandings()
+      );
+
+      return;
+
+    }
+
+
+    const leagueAPI =
+      LEAGUES[
+        state.league
+      ]?.api;
+
+
+    if (!leagueAPI) {
+
+      DOM.standings.innerHTML =
+        `
+          <div class="no-data">
+            لا يتوفر جدول ترتيب لهذا القسم.
+          </div>
+        `;
+
+      return;
+
+    }
+
+
+    DOM.standingsTitle.textContent =
+      LEAGUES[
+        state.league
+      ].name;
+
+
+    try {
+
+      const data =
+        await apiFetch(
+          "standings",
+          leagueAPI
+        );
+
+
+      const table =
+        extractStandings(
+          data
+        );
+
+
+      renderStandings(
+        table
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Standings error:",
+        error
+      );
+
+      DOM.standings.innerHTML =
+        `
+          <div class="no-data">
+            تعذر تحميل جدول الترتيب حالياً.
+          </div>
+        `;
+
+    }
+
+  }
+
+
+  function extractStandings(
+    data
+  ) {
+
+    const standings =
+      data?.standings ||
+      [];
+
+    /*
+      Football-Data قد يرجع أكثر
+      من جدول، نأخذ TOTAL.
+    */
+
+    const selected =
+      standings.find(
+        table =>
+          table.type ===
+          "TOTAL"
+      ) ||
+      standings[0];
+
+
+    return (
+      selected?.table ||
+      []
+    )
+      .map(
+        row => ({
+
+          position:
+            row.position,
+
+          team:
+            row.team?.name ||
+            "",
+
+          crest:
+            row.team?.crest ||
+            "",
+
+          played:
+            row.playedGames ??
+            row.played ??
+            0,
+
+          points:
+            row.points ??
+            0,
+
+          won:
+            row.won ??
+            0,
+
+          draw:
+            row.draw ??
+            0,
+
+          lost:
+            row.lost ??
+            0
+
+        })
+      );
+
+  }
+
+
+  function renderStandings(
+    table
+  ) {
+
+    if (
+      !table.length
+    ) {
+
+      DOM.standings.innerHTML =
+        `
+          <div class="no-data">
+            لا توجد بيانات ترتيب متاحة.
+          </div>
+        `;
+
+      return;
+
+    }
+
+
+    DOM.standings.innerHTML =
+      table
+        .slice(0, 20)
+        .map(
+          row => `
+
+            <div class="standing-row">
+
+              <span class="standing-position">
+                ${escapeHTML(
+                  row.position
+                )}
+              </span>
+
+              <span class="standing-team">
+
+                ${
+                  row.crest
+                    ? `
+                      <img
+                        class="team-crest"
+                        src="${escapeHTML(row.crest)}"
+                        alt=""
+                        loading="lazy"
+                        onerror="this.style.display='none'">
+                    `
+                    : ""
+                }
+
+                <span>
+                  ${escapeHTML(
+                    row.team
+                  )}
+                </span>
+
+              </span>
+
+              <span>
+                ${escapeHTML(
+                  row.played
+                )}
+              </span>
+
+              <span class="standing-points">
+                ${escapeHTML(
+                  row.points
+                )}
+              </span>
+
+            </div>
+
+          `
+        )
+        .join("");
+
+  }
+
+
+  function getBotolaFallbackStandings() {
+
+    /*
+      فارغة عمداً بدلاً من اختراع
+      ترتيب حالي غير مؤكد.
+    */
+
+    return [];
+
+  }
+
+
+  /* =======================================================
+     TRENDING
+  ======================================================= */
+
+  function renderTrending(
+    articles
+  ) {
+
+    const items =
+      articles.slice(
+        0,
+        5
+      );
+
+
+    DOM.trending.innerHTML =
+      items.length
+        ? items
+            .map(
+              (article, index) => `
+
+                <div
+                  class="trending-item"
+                  data-article-id="${escapeHTML(article.id)}">
+
+                  <span class="trending-number">
+                    ${index + 1}
+                  </span>
+
+                  <span class="trending-title">
+                    ${escapeHTML(
+                      article.title
+                    )}
+                  </span>
+
+                </div>
+
+              `
+            )
+            .join("")
+        : `
+          <div class="no-data">
+            لا توجد أخبار.
+          </div>
+        `;
+
+  }
+
+
+  /* =======================================================
+     VIDEOS
+  ======================================================= */
+
+  function renderVideos() {
+
+    const videos = [
+
+      {
+        title:
+          "آخر أخبار كرة القدم العالمية",
+        image:
+          FALLBACK_IMAGES[0]
+      },
+
+      {
+        title:
+          "أبرز مباريات كرة القدم",
+        image:
+          FALLBACK_IMAGES[1]
+      },
+
+      {
+        title:
+          "ملخص أهم الأحداث الرياضية",
+        image:
+          FALLBACK_IMAGES[2]
+      }
+
+    ];
+
+
+    DOM.videos.innerHTML =
+      videos
+        .map(
+          video => `
+
+            <article class="video-card">
+
+              <div class="video-thumb">
+
+                <img
+                  src="${video.image}"
+                  alt="${escapeHTML(
+                    video.title
+                  )}"
+                  loading="lazy">
+
+                <div class="video-play">
+                  ▶
+                </div>
+
+              </div>
+
+              <div class="video-body">
+
+                <h3>
+                  ${escapeHTML(
+                    video.title
+                  )}
+                </h3>
+
+              </div>
+
+            </article>
+
+          `
+        )
+        .join("");
+
+  }
+
+
+  /* =======================================================
+     LEAGUE SWITCH
+  ======================================================= */
+
+  async function switchLeague(
+    league
+  ) {
+
+    if (
+      !LEAGUES[league]
+    ) {
+      league =
+        "all";
+    }
+
+
+    state.league =
+      league;
+
+
+    document
+      .querySelectorAll(
+        ".league-tab-btn"
+      )
+      .forEach(
+        button => {
+
+          button.classList.toggle(
+            "active",
+            button.dataset.league ===
+            league
+          );
+
+        }
+      );
+
+
+    await Promise.all([
+      loadMatches(),
+      loadStandings()
+    ]);
+
+
+    renderNews();
+
+  }
+
+
+  /* =======================================================
+     DATE SWITCH
+  ======================================================= */
+
+  async function switchDate(
+    date
+  ) {
+
+    if (
+      ![
+        "yesterday",
+        "today",
+        "tomorrow"
+      ].includes(date)
+    ) {
+
+      date =
+        "today";
+
+    }
+
+
+    state.date =
+      date;
+
+
+    document
+      .querySelectorAll(
+        ".date-tab-btn"
+      )
+      .forEach(
+        button => {
+
+          button.classList.toggle(
+            "active",
+            button.dataset.date ===
+            date
+          );
+
+        }
+      );
+
+
+    await loadMatches();
+
+  }
+
+
+  /* =======================================================
+     EVENT DELEGATION
+  ======================================================= */
+
+  function setupEvents() {
+
+    /*
+      League navigation
+    */
+
+    document.addEventListener(
+      "click",
+      event => {
+
+        const leagueButton =
+          event.target.closest(
+            "[data-league]"
+          );
+
+        if (
+          leagueButton &&
+          !leagueButton.dataset.share
+        ) {
+
+          const league =
+            leagueButton.dataset.league;
+
+          if (
+            league
+          ) {
+
+            switchLeague(
+              league
+            );
+
+          }
+
+          return;
+
+        }
+
+
+        /*
+          Date tabs
+        */
+
+        const dateButton =
+          event.target.closest(
+            "[data-date]"
+          );
+
+        if (dateButton) {
+
+          switchDate(
+            dateButton.dataset.date
+          );
+
+          return;
+
+        }
+
+
+        /*
+          Article cards
+        */
+
+        const articleElement =
+          event.target.closest(
+            "[data-article-id]"
+          );
+
+        if (
+          articleElement &&
+          !event.target.closest(
+            "button"
+          )
+        ) {
+
+          openArticle(
+            articleElement.dataset.articleId
+          );
+
+          return;
+
+        }
+
+
+        /*
+          Back
+        */
+
+        if (
+          event.target.closest(
+            "#articleBackBtn"
+          )
+        ) {
+
+          closeArticle();
+
+          return;
+
+        }
+
+
+        /*
+          Share
+        */
+
+        const shareButton =
+          event.target.closest(
+            "[data-share]"
+          );
+
+        if (shareButton) {
+
+          const article =
+            getCurrentArticle();
+
+          if (article) {
+
+            shareArticle(
+              shareButton.dataset.share,
+              article
+            );
+
+          }
+
+        }
+
+      }
+    );
+
+
+    /*
+      Search
+    */
+
+    DOM.search.addEventListener(
+      "input",
+      event => {
+
+        state.search =
+          event.target.value;
+
+        renderNews();
+
+      }
+    );
+
+
+    /*
+      Reset search
+    */
+
+    DOM.resetSearch.addEventListener(
+      "click",
+      () => {
+
+        DOM.search.value =
+          "";
+
+        state.search =
+          "";
+
+        renderNews();
+
+      }
+    );
+
+
+    /*
+      Logo
+    */
+
+    document
+      .getElementById(
+        "homeLogo"
+      )
+      .addEventListener(
+        "click",
+        event => {
+
+          if (
+            window.location.hash
+          ) {
+
+            event.preventDefault();
+
+            closeArticle();
+
+          }
+
+        }
+      );
+
+
+    /*
+      Browser back/forward
+    */
+
+    window.addEventListener(
+      "popstate",
+      () => {
+
+        handleHashRoute();
+
+      }
+    );
+
+
+    window.addEventListener(
+      "hashchange",
+      () => {
+
+        handleHashRoute();
+
+      }
+    );
+
+  }
+
+
+  function getCurrentArticle() {
+
+    const match =
+      window.location.hash.match(
+        /^#article-(.+)$/
+      );
+
+    if (!match) {
+      return null;
+    }
+
+    const id =
+      decodeURIComponent(
+        match[1]
+      );
+
+    return state.articles.find(
+      article =>
+        String(article.id) ===
+        String(id)
+    ) || null;
+
+  }
+
+
+  /* =======================================================
+     ERROR BOUNDARY
+  ======================================================= */
+
+  window.addEventListener(
+    "error",
+    event => {
+
+      console.error(
+        "SPORT ZONE runtime error:",
+        event.error ||
+        event.message
+      );
+
+    }
+  );
+
+
+  window.addEventListener(
+    "unhandledrejection",
+    event => {
+
+      console.error(
+        "SPORT ZONE promise error:",
+        event.reason
+      );
+
+    }
+  );
+
+
+  /* =======================================================
+     PUBLIC CONTROLLER
+  ======================================================= */
+
+  window.szAppController = {
+
+    switchLeague,
+
+    switchDate,
+
+    openArticle,
+
+    closeSingleArticleView:
+      closeArticle,
+
+    refresh: async () => {
+
+      await loadNews();
+      await loadMatches();
+      await loadStandings();
+
+    }
+
+  };
+
+
+  /* =======================================================
+     INITIALIZATION
+  ======================================================= */
+
+  async function init() {
+
+    try {
+
+      cacheDOM();
+
+      setupEvents();
+
+      renderVideos();
+
+      /*
+        الأخبار والمباريات والترتيب
+        يتم تحميلهم بالتوازي.
+      */
+
+      await Promise.all([
+        loadNews(),
+        loadMatches(),
+        loadStandings()
+      ]);
+
+
+      /*
+        مهم للروابط:
+        sportzon.biz/#article-xxxx
+      */
+
+      handleHashRoute();
+
+    } catch (error) {
+
+      console.error(
+        "SPORT ZONE initialization error:",
+        error
+      );
+
+      if (DOM.news) {
+
+        DOM.news.innerHTML = `
+          <div class="panel">
+            <div class="no-data">
+              وقع خطأ أثناء تحميل الموقع.
+              حاول تحديث الصفحة.
+            </div>
+          </div>
+        `;
+
+      }
+
+    }
+
+  }
+
+
+  /*
+    تشغيل التطبيق بعد تحميل DOM
+  */
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      init
+    );
+
+  } else {
+
+    init();
+
+  }
+
+
 })();
