@@ -58,15 +58,54 @@
     };
 
     // 2. Load Admin Posts on Homepage
+  // 2. Load Admin Posts on Homepage (Enhanced to scan all LocalStorage)
     function loadAdminArticles() {
         const container = document.getElementById('newsGridContainer');
         if (!container) return;
 
         let posts = [];
-        try {
-            posts = JSON.parse(localStorage.getItem('sz_sports_data_v5') || localStorage.getItem('sport_zone_posts') || '[]');
-        } catch(e) {
-            posts = [];
+        
+        // فحص كل المفاتيح المحتملة في التخزين المحلي
+        const possibleKeys = ['sz_sports_data_v5', 'sport_zone_posts', 'admin_posts', 'posts', 'articles', 'news_data'];
+        
+        for (let key of possibleKeys) {
+            try {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        posts = parsed;
+                        console.log("Found posts in key:", key);
+                        break;
+                    } else if (parsed && typeof parsed === 'object') {
+                        // لو كان الكائن يحتوي على مصفوفة بداخله
+                        const values = Object.values(parsed);
+                        for (let val of values) {
+                            if (Array.isArray(val) && val.length > 0) {
+                                posts = val;
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error("Error reading key:", key, e);
+            }
+        }
+
+        // إذا لم يتم العثور على مقالات، فحص جميع مفاتيح الـ LocalStorage عشوائياً
+        if (posts.length === 0) {
+            for (let i = 0; i < localStorage.length; i++) {
+                const keyName = localStorage.key(i);
+                try {
+                    const item = JSON.parse(localStorage.getItem(keyName));
+                    if (Array.isArray(item) && item.length > 0 && (item[0].title || item[0].content)) {
+                        posts = item;
+                        console.log("Found posts in dynamic key:", keyName);
+                        break;
+                    }
+                } catch(e) {}
+            }
         }
 
         if (posts.length === 0) {
@@ -81,16 +120,15 @@
 
         container.innerHTML = posts.map(art => `
             <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow">
-                <img src="${art.image}" class="w-full h-40 object-cover" referrerpolicy="no-referrer">
+                <img src="${art.image || 'https://via.placeholder.com/400x200'}" class="w-full h-40 object-cover" referrerpolicy="no-referrer">
                 <div class="p-4">
-                    <span class="text-xs text-cyan-400 bg-cyan-950 px-2 py-1 rounded">${art.category}</span>
-                    <h3 class="text-white font-bold text-base mt-2">${art.title}</h3>
-                    <p class="text-slate-400 text-xs mt-2 line-clamp-2">${art.content}</p>
+                    <span class="text-xs text-cyan-400 bg-cyan-950 px-2 py-1 rounded">${art.category || 'عام'}</span>
+                    <h3 class="text-white font-bold text-base mt-2">${art.title || art.heading || 'بدون عنوان'}</h3>
+                    <p class="text-slate-400 text-xs mt-2 line-clamp-2">${art.content || art.body || ''}</p>
                 </div>
             </div>
         `).join('');
     }
-
     // Initialize on load
     document.addEventListener('DOMContentLoaded', () => {
         loadStandings("الدوري الإسباني");
