@@ -57,51 +57,37 @@
         `).join('');
     };
 
-    // 2. Load Admin Posts on Homepage
-  // 2. Load Admin Posts on Homepage (Enhanced to scan all LocalStorage)
+  // 2. Load Admin Posts on Homepage (Direct Fix for Admin Sync)
     function loadAdminArticles() {
         const container = document.getElementById('newsGridContainer');
         if (!container) return;
 
         let posts = [];
         
-        // فحص كل المفاتيح المحتملة في التخزين المحلي
-        const possibleKeys = ['sz_sports_data_v5', 'sport_zone_posts', 'admin_posts', 'posts', 'articles', 'news_data'];
+        // البحث في المفاتيح المحتملة للوحة التحكم
+        const keysToCheck = ['sz_sports_data_v5', 'sport_zone_posts', 'admin_posts', 'posts', 'articles', 'news'];
         
-        for (let key of possibleKeys) {
-            try {
-                const data = localStorage.getItem(key);
-                if (data) {
+        for (let k of keysToCheck) {
+            const data = localStorage.getItem(k);
+            if (data) {
+                try {
                     const parsed = JSON.parse(data);
                     if (Array.isArray(parsed) && parsed.length > 0) {
                         posts = parsed;
-                        console.log("Found posts in key:", key);
                         break;
-                    } else if (parsed && typeof parsed === 'object') {
-                        // لو كان الكائن يحتوي على مصفوفة بداخله
-                        const values = Object.values(parsed);
-                        for (let val of values) {
-                            if (Array.isArray(val) && val.length > 0) {
-                                posts = val;
-                                break;
-                            }
-                        }
                     }
-                }
-            } catch(e) {
-                console.error("Error reading key:", key, e);
+                } catch(e) {}
             }
         }
 
-        // إذا لم يتم العثور على مقالات، فحص جميع مفاتيح الـ LocalStorage عشوائياً
+        // إذا لم يتم العثور عليها بالطريقة السابقة، نبحث في كل تخزين المتصفح
         if (posts.length === 0) {
             for (let i = 0; i < localStorage.length; i++) {
                 const keyName = localStorage.key(i);
                 try {
                     const item = JSON.parse(localStorage.getItem(keyName));
-                    if (Array.isArray(item) && item.length > 0 && (item[0].title || item[0].content)) {
+                    if (Array.isArray(item) && item.length > 0 && (item[0].title || item[0].heading)) {
                         posts = item;
-                        console.log("Found posts in dynamic key:", keyName);
                         break;
                     }
                 } catch(e) {}
@@ -110,22 +96,20 @@
 
         if (posts.length === 0) {
             container.innerHTML = `
-                <div class="text-center py-12 col-span-full">
-                    <p class="text-slate-400 mb-4">لا توجد مقالات منشورة حالياً في الصفحة الرئيسية.</p>
-                    <a href="admin.html" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition">الذهاب لوحة التحكم لإضافة مقال</a>
+                <div class="text-center py-12 col-span-full text-slate-400">
+                    <p class="mb-4">لا توجد مقالات منشورة حالياً في الصفحة الرئيسية.</p>
+                    <a href="admin.html" class="bg-cyan-500 text-slate-950 font-bold px-6 py-2 rounded-xl">الذهاب لوحة التحكم لإضافة مقال</a>
                 </div>
             `;
             return;
         }
 
         container.innerHTML = posts.map(art => `
-            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow">
-                <img src="${art.image || 'https://via.placeholder.com/400x200'}" class="w-full h-40 object-cover" referrerpolicy="no-referrer">
-                <div class="p-4">
-                    <span class="text-xs text-cyan-400 bg-cyan-950 px-2 py-1 rounded">${art.category || 'عام'}</span>
-                    <h3 class="text-white font-bold text-base mt-2">${art.title || art.heading || 'بدون عنوان'}</h3>
-                    <p class="text-slate-400 text-xs mt-2 line-clamp-2">${art.content || art.body || ''}</p>
-                </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow p-4 hover:border-cyan-500 transition">
+                <img src="${art.image || art.img || 'https://via.placeholder.com/400x200'}" class="w-full h-40 object-cover rounded-lg mb-3" referrerpolicy="no-referrer">
+                <span class="text-xs text-cyan-400 bg-cyan-950 px-2 py-1 rounded">${art.category || 'رياضة'}</span>
+                <h3 class="text-white font-bold text-base mt-2">${art.title || art.heading || ''}</h3>
+                <p class="text-slate-400 text-xs mt-2 line-clamp-2">${art.content || art.body || ''}</p>
             </div>
         `).join('');
     }
