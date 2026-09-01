@@ -1,525 +1,114 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl" class="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>SPORT ZONE | أخبار الرياضة ومباريات اليوم</title>
-
-  <meta name="description"
-        content="SPORT ZONE - أخبار كرة القدم، مباريات اليوم، النتائج المباشرة وترتيب أهم الدوريات العالمية والبطولة المغربية.">
-
-  <meta name="keywords"
-        content="رياضة, كرة القدم, مباريات اليوم, البطولة المغربية, الدوري الإسباني, الدوري الإنجليزي, الدوري الإيطالي, الدوري الألماني, الدوري الفرنسي, دوري أبطال أوروبا">
-
-  <meta name="robots" content="index,follow">
-
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="SPORT ZONE | أخبار الرياضة">
-  <meta property="og:description"
-        content="آخر أخبار كرة القدم ونتائج وترتيب المباريات والدوريات.">
-  <meta property="og:url" content="https://sportzon.biz/">
-  <meta property="og:image"
-        content="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80">
-
-  <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap"
-        rel="stylesheet">
-
-  <link rel="stylesheet" href="./css/style.css">
-</head>
-
-<body>
-
-<!-- =====================================================
-     TOP BAR
-===================================================== -->
-
-<div class="top-bar">
-
-  <div class="container top-bar-inner">
-
-    <div class="top-left">
-
-      <span class="live-indicator">
-        <span class="live-dot"></span>
-        LIVE
-      </span>
-
-      <span class="morocco-time">
-        🇲🇦 توقيت المغرب GMT+1
-      </span>
-
-    </div>
-
-    <div class="top-right">
-
-      <div class="mini-leagues">
-
-        <button data-league="botola">🇲🇦</button>
-        <button data-league="PD">🇪🇸</button>
-        <button data-league="PL">🏴</button>
-        <button data-league="SA">🇮🇹</button>
-        <button data-league="BL1">🇩🇪</button>
-        <button data-league="FL1">🇫🇷</button>
-        <button data-league="CL">🏆</button>
-
-      </div>
-
-      <div class="search-wrapper">
-
-        <input
-          id="searchInput"
-          type="search"
-          autocomplete="off"
-          placeholder="ابحث عن خبر..."
-        >
-
-        <span>🔍</span>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- =====================================================
-     HEADER
-===================================================== -->
-
-<header class="site-header">
-
-  <div class="container header-inner">
-
-    <a href="./index.html"
-       class="brand"
-       id="homeLogo">
-
-      <div class="brand-icon">
-        SZ
-      </div>
-
-      <div>
-
-        <div class="brand-title">
-          SPORT <span>ZONE</span>
-        </div>
-
-        <div class="brand-subtitle">
-          المنصة الرياضية العربية
-        </div>
-
-      </div>
-
-    </a>
-
-    <div class="header-info">
-
-      <strong>⚽ تغطية رياضية مباشرة</strong>
-
-      <span>
-        أخبار • نتائج • ترتيب • مباريات
-      </span>
-
-    </div>
-
-  </div>
-
-</header>
-
-
-<!-- =====================================================
-     NAVIGATION
-===================================================== -->
-
-<nav class="main-nav">
-
-  <div class="container">
-
-    <div id="leagueNavContainer" class="league-nav">
-
-      <button
-        class="league-tab-btn active"
-        data-league="all">
-        🏠 الرئيسية
-      </button>
-
-      <button
-        class="league-tab-btn"
-        data-league="botola">
-        🇲🇦 البطولة برو
-      </button>
-
-      <button
-        class="league-tab-btn"
-        data-league="PD">
-        🇪🇸 الدوري الإسباني
-      </button>
-
-      <button
-        class="league-tab-btn"
-        data-league="PL">
-        🏴 الدوري الإنجليزي
-      </button>
-
-      <button
-        class="league-tab-btn"
-        data-league="SA">
-        🇮🇹 الدوري الإيطالي
-      </button>
-
-      <button
-        class="league-tab-btn"
-        data-league="BL1">
-        🇩🇪 الدوري الألماني
-      </button>
-
-      <button
-        class="league-tab-btn"
-        data-league="FL1">
-        🇫🇷 الدوري الفرنسي
-      </button>
-
-      <button
-        class="league-tab-btn"
-        data-league="CL">
-        🏆 دوري أبطال أوروبا
-      </button>
-
-    </div>
-
-  </div>
-
-</nav>
-
-
-<!-- =====================================================
-     MATCH TICKER
-===================================================== -->
-
-<section class="match-strip">
-
-  <div class="container">
-
-    <div
-      id="tickerMatchesContainer"
-      class="ticker-container">
-
-      <!-- JS -->
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- =====================================================
-     MAIN
-===================================================== -->
-
-<main class="container main-container">
-
-
-  <!-- ===================================================
-       SINGLE ARTICLE
-  ==================================================== -->
-
-  <section
-    id="singleArticleView"
-    class="single-article-view"
-    style="display:none;">
-
-    <!-- JS -->
-
-  </section>
-
-
-  <!-- ===================================================
-       HOME
-  ==================================================== -->
-
-  <section id="mainHomeView">
-
-
-    <!-- SEARCH NOTICE -->
-
-    <div
-      id="searchNoticeBar"
-      class="search-notice hidden">
-
-      <span id="searchNoticeText"></span>
-
-      <button id="resetSearchBtn">
-        إلغاء البحث ✕
-      </button>
-
-    </div>
-
-
-    <div class="main-grid">
-
-
-      <!-- ===============================================
-           SIDEBAR
-      ================================================ -->
-
-      <aside class="sidebar">
-
-
-        <!-- MATCH CENTER -->
-
-        <section class="panel">
-
-          <div class="panel-header">
-
-            <h2>
-              📅 أهم المباريات
-            </h2>
-
-            <div
-              id="dateTabsContainer"
-              class="date-tabs">
-
-              <button
-                class="date-tab-btn"
-                data-date="yesterday">
-                أمس
-              </button>
-
-              <button
-                class="date-tab-btn active"
-                data-date="today">
-                اليوم
-              </button>
-
-              <button
-                class="date-tab-btn"
-                data-date="tomorrow">
-                الغد
-              </button>
-
+/* =========================================================
+   SPORT ZONE - Final Direct Article Sync & API Standings
+   ========================================================= */
+
+(function () {
+    "use strict";
+
+    const API_KEY = "eba4f3dbffff48ff8dd42b3a8f11793b";
+    const BASE_URL = "https://api.football-data.org/v4/";
+
+    // 1. جلب الترتيب من الـ API
+    async function loadStandings(competitionCode = "PD") {
+        const container = document.getElementById('standingsTableBody');
+        if (!container) return;
+
+        try {
+            const response = await fetch(`${BASE_URL}competitions/${competitionCode}/standings`, {
+                headers: { "X-Auth-Token": API_KEY }
+            });
+            if (!response.ok) throw new Error("API error");
+            const data = await response.json();
+
+            if (!data.standings || !data.standings[0]) return;
+            const table = data.standings[0].table;
+
+            container.innerHTML = table.slice(0, 10).map((row, index) => `
+                <div style="display: flex; justify-content: space-between; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center; font-size: 13px;">
+                    <span style="width: 25px; text-align: center; color: #94a3b8;">${index + 1}</span>
+                    <span style="display: flex; align-items: center; gap: 8px; flex: 1; color: #fff;">
+                        <img src="${row.team.crest || ''}" alt="" style="width: 20px; height: 20px; object-fit: contain;" referrerpolicy="no-referrer">
+                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px;">${row.team.name}</span>
+                    </span>
+                    <span style="width: 30px; text-align: center; color: #94a3b8;">${row.playedGames}</span>
+                    <span style="width: 30px; text-align: center; color: #34d399; font-weight: bold;">${row.points}</span>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error("Standings error:", e);
+        }
+    }
+
+    // 2. جلب وعرض المقالات من لوحة التحكم مباشرة
+    function loadAdminArticles() {
+        const container = document.getElementById('newsGridContainer');
+        if (!container) return;
+
+        let posts = [];
+
+        // فحص شامل لكل الـ LocalStorage لالتقاط المقالات أينما وجدت
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const rawData = localStorage.getItem(key);
+            try {
+                const parsed = JSON.parse(rawData);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    // التحقق مما إذا كانت العناصر تحتوي على خصائص مقال
+                    if (parsed[0].title || parsed[0].heading || parsed[0].content || parsed[0].body) {
+                        posts = parsed;
+                        break;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        if (posts.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #94a3b8; grid-column: span 2;">
+                    <p style="margin-bottom: 15px;">لا توجد مقالات منشورة حالياً في الصفحة الرئيسية.</p>
+                    <a href="admin.html" style="background: #06b6d4; color: #020617; padding: 10px 20px; border-radius: 8px; font-weight: bold; text-decoration: none;">إضافة مقال جديد من لوحة التحكم</a>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = posts.map(art => `
+            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                <img src="${art.image || art.img || art.imageUrl || 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80'}" style="width: 100%; height: 180px; object-fit: cover;" referrerpolicy="no-referrer">
+                <div style="padding: 16px;">
+                    <span style="font-size: 11px; color: #34d399; background: rgba(5, 150, 105, 0.2); padding: 2px 8px; border-radius: 4px;">${art.category || 'رياضة'}</span>
+                    <h3 style="color: #fff; font-size: 16px; font-weight: bold; margin-top: 8px; line-height: 1.4;">${art.title || art.heading || ''}</h3>
+                    <p style="color: #94a3b8; font-size: 13px; margin-top: 8px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${art.content || art.body || art.description || ''}</p>
+                </div>
             </div>
-
-          </div>
-
-          <div
-            id="todayMatchesWidget"
-            class="matches-widget">
-
-            <!-- JS -->
-
-          </div>
-
-        </section>
-
-
-        <!-- STANDINGS -->
-
-        <section class="panel">
-
-          <div class="panel-header">
-
-            <h2>
-              📊 الترتيب
-            </h2>
-
-            <span
-              id="currentLeagueStandingsTitle"
-              class="league-title">
-              الرئيسية
-            </span>
-
-          </div>
-
-          <div id="standingsTableContainer">
-
-            <div class="standings-head">
-
-              <span>#</span>
-              <span>الفريق</span>
-              <span>لعب</span>
-              <span>نقاط</span>
-
-            </div>
-
-            <div
-              id="standingsTableBody">
-              <!-- JS -->
-            </div>
-
-          </div>
-
-        </section>
-
-
-        <!-- TRENDING -->
-
-        <section class="panel">
-
-          <div class="panel-header">
-
-            <h2>
-              🔥 الأكثر قراءة
-            </h2>
-
-          </div>
-
-          <div
-            id="trendingNewsWidget">
-            <!-- JS -->
-          </div>
-
-        </section>
-
-      </aside>
-
-
-      <!-- ===============================================
-           NEWS
-      ================================================ -->
-
-      <section class="news-column">
-
-
-        <!-- HERO -->
-
-        <div id="heroArticleContainer">
-
-          <!-- JS -->
-
-        </div>
-
-
-        <!-- NEWS GRID -->
-
-        <div
-          id="newsGridContainer"
-          class="news-grid">
-
-          <!-- JS -->
-
-        </div>
-
-
-      </section>
-
-    </div>
-
-
-    <!-- ===============================================
-         VIDEOS
-    ================================================ -->
-
-    <section
-      id="videos"
-      class="videos-section">
-
-      <div class="section-title">
-
-        <h2>
-          🎬 آخر الفيديوهات
-        </h2>
-
-        <span>
-          تغطية رياضية
-        </span>
-
-      </div>
-
-      <div
-        id="videosContainer"
-        class="videos-grid">
-
-        <!-- JS -->
-
-      </div>
-
-    </section>
-
-
-  </section>
-
-</main>
-
-
-<!-- =====================================================
-     FOOTER
-===================================================== -->
-
-<footer class="footer">
-
-  <div class="container">
-
-    <div class="footer-main">
-
-      <div>
-
-        <strong>
-          SPORT ZONE
-        </strong>
-
-        <p>
-          منصتك الرياضية لمتابعة أخبار كرة القدم والمباريات والنتائج.
-        </p>
-
-      </div>
-
-      <div class="footer-links">
-
-        <a href="./privacy.html">
-          سياسة الخصوصية
-        </a>
-
-        <a href="./terms.html">
-          الشروط والأحكام
-        </a>
-
-        <a href="./about.html">
-          من نحن
-        </a>
-
-        <a href="./contact.html">
-          اتصل بنا
-        </a>
-
-      </div>
-
-    </div>
-
-    <div class="footer-bottom">
-
-      © 2026 SPORT ZONE - sportzon.biz
-
-    </div>
-
-  </div>
-
-</footer>
-
-
-<!-- TOAST -->
-
-<div
-  id="szToast"
-  class="toast">
-</div>
-
-
-<!-- APP -->
-
-<script
-  src="./js/app.js"
-  defer>
-</script>
-
-</body>
-</html>
+        `).join('');
+    }
+
+    // تشغيل الدوال عند تحميل الصفحة والأزرار
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStandings("PD");
+        loadAdminArticles();
+
+        const leagueMap = {
+            "PD": "PD",
+            "PL": "PL",
+            "SA": "SA",
+            "BL1": "BL1",
+            "FL1": "FL1",
+            "botola": "PD"
+        };
+
+        document.querySelectorAll('[data-league]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const leagueKey = e.currentTarget.getAttribute('data-league');
+                document.querySelectorAll('[data-league]').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+
+                if (leagueMap[leagueKey]) {
+                    loadStandings(leagueMap[leagueKey]);
+                }
+            });
+        });
+    });
+
+})();
